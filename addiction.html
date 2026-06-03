@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050506">
+<meta name="color-scheme" content="dark">
+<title>Recovery</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync.js" defer></script>
+<script src="topbar.js" defer></script>
+<style>
+:root {
+  --bg: #050506;
+  --bg-card: rgba(255,255,255,0.04);
+  --bg-secondary: rgba(255,255,255,0.035);
+  --bg-input: rgba(0,0,0,0.28);
+  --border: rgba(255,255,255,0.06);
+  --border-soft: rgba(255,255,255,0.04);
+  --border-strong: rgba(255,255,255,0.12);
+  --text-primary: #FAFAFA;
+  --text-secondary: #B8B6B0;
+  --text-tertiary: #76746E;
+  --text-quaternary: #4D4B47;
+  --accent: #A78BFA;
+  --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+body { min-height: 100vh; position: relative; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background:
+    radial-gradient(60% 50% at 75% 10%, rgba(139,92,246,0.18) 0%, transparent 60%),
+    radial-gradient(50% 40% at 20% 85%, rgba(167,139,250,0.08) 0%, transparent 60%);
+  filter: blur(40px); pointer-events: none; z-index: 0;
+  animation: drift 36s ease-in-out infinite alternate;
+}
+body::after {
+  content: ''; position: fixed; inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.014) 1px, transparent 1px);
+  background-size: 3px 3px; pointer-events: none; z-index: 1;
+}
+@keyframes drift { 0% { transform: translate(0,0); } 100% { transform: translate(-2%,2%); } }
+
+main {
+  position: relative; z-index: 2;
+  max-width: 720px; margin: 0 auto;
+  padding: 56px 20px 80px;
+  padding-top: max(56px, env(safe-area-inset-top, 56px));
+}
+
+.section-title {
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 4px 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-title::before { content: '≡'; font-size: 14px; opacity: 0.5; }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 16px;
+}
+
+/* Recovery hero */
+.recovery-hero { text-align: center; padding: 32px 22px 24px; }
+.recovery-days-num {
+  font-size: 80px; font-weight: 800; line-height: 1; letter-spacing: -3px;
+  color: var(--text-primary); font-variant-numeric: tabular-nums;
+}
+.recovery-days-label {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--accent); margin-top: 6px;
+}
+.recovery-since { font-size: 13px; color: var(--text-tertiary); margin-top: 10px; }
+.recovery-since strong { color: var(--text-secondary); font-weight: 500; }
+.recovery-date-row {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 16px;
+}
+.recovery-date-input {
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-secondary);
+  font-family: var(--font); font-size: 13px;
+  padding: 6px 10px; outline: none; color-scheme: dark;
+  transition: border-color 0.15s;
+}
+.recovery-date-input:focus { border-color: var(--accent); }
+.recovery-reset-btn {
+  background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.22);
+  border-radius: 8px; color: #f87171;
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+  padding: 6px 12px; cursor: pointer; transition: background 0.15s;
+}
+.recovery-reset-btn:hover { background: rgba(239,68,68,0.2); }
+
+/* Milestones */
+.milestone-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.milestone-chip {
+  flex: 1 1 calc(25% - 8px); min-width: 80px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 8px; transition: all 0.2s;
+}
+.milestone-chip.achieved {
+  background: rgba(167,139,250,0.10); border-color: rgba(167,139,250,0.30);
+}
+.milestone-chip.next { border-color: rgba(167,139,250,0.18); }
+.milestone-chip-icon { font-size: 18px; opacity: 0.25; }
+.milestone-chip.achieved .milestone-chip-icon { opacity: 1; }
+.milestone-chip-label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-quaternary);
+}
+.milestone-chip.achieved .milestone-chip-label { color: var(--accent); }
+.milestone-chip.next .milestone-chip-label { color: var(--text-tertiary); }
+.milestone-chip-days { font-size: 10px; color: var(--text-quaternary); }
+.milestone-chip.achieved .milestone-chip-days { color: rgba(167,139,250,0.6); }
+
+/* Log urge */
+.urge-intensity-label { font-size: 12px; color: var(--text-tertiary); margin-bottom: 10px; }
+.urge-intensity-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.intensity-btn {
+  flex: 1; padding: 10px 4px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg-secondary);
+  color: var(--text-tertiary); font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+  cursor: pointer; text-align: center; transition: all 0.15s;
+}
+.intensity-btn:hover { border-color: var(--border-strong); color: var(--text-secondary); }
+.intensity-btn.sel-1 { background: rgba(110,231,183,0.15); border-color: rgba(110,231,183,0.4); color: #6ee7b7; }
+.intensity-btn.sel-2 { background: rgba(250,204,21,0.12); border-color: rgba(250,204,21,0.35); color: #facc15; }
+.intensity-btn.sel-3 { background: rgba(251,146,60,0.14); border-color: rgba(251,146,60,0.38); color: #fb923c; }
+.intensity-btn.sel-4 { background: rgba(239,68,68,0.13); border-color: rgba(239,68,68,0.35); color: #f87171; }
+.intensity-btn.sel-5 { background: rgba(239,68,68,0.22); border-color: rgba(239,68,68,0.5); color: #ff4444; }
+.urge-note {
+  width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text-primary);
+  font-family: var(--font); font-size: 14px;
+  padding: 10px 12px; resize: none; outline: none;
+  transition: border-color 0.15s; margin-bottom: 12px;
+}
+.urge-note:focus { border-color: var(--accent); }
+.urge-note::placeholder { color: var(--text-quaternary); }
+.urge-log-btn {
+  width: 100%; background: var(--accent); border: none; border-radius: 10px;
+  color: #fff; font-family: var(--font); font-size: 14px; font-weight: 700;
+  padding: 12px; cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+}
+.urge-log-btn:hover { opacity: 0.88; }
+.urge-log-btn:active { transform: scale(0.98); }
+.urge-log-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Frequency chart */
+.freq-chart {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 60px; margin-bottom: 10px;
+}
+.freq-bar-wrap {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  height: 100%; gap: 3px;
+}
+.freq-bar {
+  width: 100%; border-radius: 3px 3px 0 0;
+  background: rgba(167,139,250,0.30); min-height: 2px;
+  align-self: flex-end; transition: height 0.3s ease;
+}
+.freq-bar.today { background: var(--accent); }
+.freq-bar-date {
+  font-family: var(--font-mono); font-size: 8px; color: var(--text-quaternary);
+  white-space: nowrap;
+}
+.freq-bar-date.today { color: var(--accent); }
+.freq-summary { font-size: 13px; color: var(--text-tertiary); }
+.freq-summary strong { color: var(--text-secondary); font-weight: 600; }
+
+/* Urge history */
+.urge-list { display: flex; flex-direction: column; gap: 8px; }
+.urge-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px; background: var(--bg-secondary);
+  border: 1px solid var(--border-soft); border-radius: 10px;
+}
+.urge-dot {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+}
+.urge-dot.i1 { background: rgba(110,231,183,0.15); color: #6ee7b7; }
+.urge-dot.i2 { background: rgba(250,204,21,0.12); color: #facc15; }
+.urge-dot.i3 { background: rgba(251,146,60,0.14); color: #fb923c; }
+.urge-dot.i4 { background: rgba(239,68,68,0.13); color: #f87171; }
+.urge-dot.i5 { background: rgba(239,68,68,0.22); color: #ff4444; }
+.urge-body { flex: 1; min-width: 0; }
+.urge-note-text { font-size: 14px; color: var(--text-secondary); }
+.urge-meta { font-size: 12px; color: var(--text-quaternary); margin-top: 2px; }
+.urge-del {
+  background: none; border: none; color: var(--text-quaternary);
+  font-size: 18px; cursor: pointer; padding: 0 2px; line-height: 1;
+  opacity: 0; transition: opacity 0.15s;
+}
+.urge-item:hover .urge-del { opacity: 1; }
+.urge-empty {
+  text-align: center; font-size: 13px; color: var(--text-quaternary); padding: 20px 0;
+}
+
+.attribution {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--text-quaternary); text-align: center; padding-top: 32px;
+}
+
+@media (max-width: 480px) {
+  .recovery-days-num { font-size: 60px; }
+  .milestone-chip { flex: 1 1 calc(50% - 8px); }
+}
+</style>
+</head>
+<body>
+<main>
+
+  <div class="section-title">Recovery</div>
+  <div class="card recovery-hero">
+    <div class="recovery-days-num" id="daysNum">—</div>
+    <div class="recovery-days-label">days clean</div>
+    <div class="recovery-since" id="recoverySince">Set your start date below</div>
+    <div class="recovery-date-row">
+      <input type="date" class="recovery-date-input" id="startDateInput" />
+      <button class="recovery-reset-btn" id="resetBtn">Reset to today</button>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:24px;">Milestones</div>
+  <div class="card">
+    <div class="milestone-grid" id="milestoneGrid"></div>
+  </div>
+
+  <div class="section-title" style="margin-top:24px;">Log an urge</div>
+  <div class="card">
+    <div class="urge-intensity-label">How strong is it? (1 = mild · 5 = intense)</div>
+    <div class="urge-intensity-row" id="intensityRow">
+      <button class="intensity-btn" data-v="1">1</button>
+      <button class="intensity-btn" data-v="2">2</button>
+      <button class="intensity-btn" data-v="3">3</button>
+      <button class="intensity-btn" data-v="4">4</button>
+      <button class="intensity-btn" data-v="5">5</button>
+    </div>
+    <textarea class="urge-note" id="urgeNote" rows="2" placeholder="What triggered it? (optional)"></textarea>
+    <button class="urge-log-btn" id="urgeLogBtn" disabled>Select intensity to log</button>
+  </div>
+
+  <div class="section-title" style="margin-top:24px;">Urge frequency — last 14 days</div>
+  <div class="card">
+    <div class="freq-chart" id="freqChart"></div>
+    <div class="freq-summary" id="freqSummary"></div>
+  </div>
+
+  <div class="section-title" style="margin-top:24px;">History</div>
+  <div class="card">
+    <div class="urge-list" id="urgeList"></div>
+    <div class="urge-empty" id="urgeEmpty">No urges logged yet — you're doing great.</div>
+  </div>
+
+  <div class="attribution">// recovery tracker · data syncs across your devices</div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const KEY = 'addiction_v1';
+
+  const MILESTONES = [
+    { label: '1 day',    days: 1,   icon: '🌱' },
+    { label: '3 days',   days: 3,   icon: '✨' },
+    { label: '1 week',   days: 7,   icon: '🔥' },
+    { label: '2 weeks',  days: 14,  icon: '⚡' },
+    { label: '1 month',  days: 30,  icon: '🏅' },
+    { label: '3 months', days: 90,  icon: '🥇' },
+    { label: '6 months', days: 180, icon: '💎' },
+    { label: '1 year',   days: 365, icon: '👑' },
+  ];
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; }
+  }
+  function save(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
+
+  function daysSince(dateStr) {
+    if (!dateStr) return null;
+    const ms = Date.now() - new Date(dateStr + 'T00:00:00').getTime();
+    return ms < 0 ? 0 : Math.floor(ms / 86400000);
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function timeAgo(ts) {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return 'just now';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+
+  function todayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  let selectedIntensity = null;
+
+  function render() {
+    const data = load();
+    const days = daysSince(data.startDate);
+    const urges = data.urges || [];
+
+    // Hero
+    document.getElementById('daysNum').textContent = days !== null ? days : '—';
+    document.getElementById('recoverySince').textContent =
+      data.startDate ? 'since ' + formatDate(data.startDate) : 'Set your start date below';
+    const dateInput = document.getElementById('startDateInput');
+    if (data.startDate && dateInput.value !== data.startDate) dateInput.value = data.startDate;
+
+    // Milestones
+    const grid = document.getElementById('milestoneGrid');
+    grid.innerHTML = '';
+    const nextIdx = MILESTONES.findIndex(m => days === null || days < m.days);
+    MILESTONES.forEach((m, i) => {
+      const achieved = days !== null && days >= m.days;
+      const isNext = i === nextIdx;
+      const chip = document.createElement('div');
+      chip.className = 'milestone-chip' + (achieved ? ' achieved' : isNext ? ' next' : '');
+      chip.innerHTML =
+        '<div class="milestone-chip-icon">' + m.icon + '</div>' +
+        '<div class="milestone-chip-label">' + m.label + '</div>' +
+        '<div class="milestone-chip-days">' + m.days + 'd</div>';
+      grid.appendChild(chip);
+    });
+
+    // Frequency chart (14 days)
+    const freqChart = document.getElementById('freqChart');
+    freqChart.innerHTML = '';
+    const today = todayKey();
+    const dayCounts = {};
+    urges.forEach(u => {
+      const d = new Date(u.ts);
+      const k = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      dayCounts[k] = (dayCounts[k] || 0) + 1;
+    });
+    const maxCount = Math.max(1, ...Object.values(dayCounts).concat([0]));
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const k = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      const count = dayCounts[k] || 0;
+      const isToday = k === today;
+      const heightPct = count > 0 ? Math.max(10, Math.round((count / maxCount) * 100)) : 4;
+      const wrap = document.createElement('div');
+      wrap.className = 'freq-bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'freq-bar' + (isToday ? ' today' : '');
+      bar.style.height = heightPct + '%';
+      bar.title = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ': ' + count + ' urge' + (count !== 1 ? 's' : '');
+      const label = document.createElement('div');
+      label.className = 'freq-bar-date' + (isToday ? ' today' : '');
+      label.textContent = isToday ? 'T' : (i === 13 ? d.toLocaleDateString(undefined, {month:'short'}).slice(0,1) + d.getDate() : d.getDate());
+      wrap.appendChild(bar);
+      wrap.appendChild(label);
+      freqChart.appendChild(wrap);
+    }
+
+    // Freq summary
+    const thisWeek = urges.filter(u => Date.now() - u.ts < 7 * 86400000).length;
+    const lastWeek = urges.filter(u => { const diff = Date.now() - u.ts; return diff >= 7*86400000 && diff < 14*86400000; }).length;
+    const freqEl = document.getElementById('freqSummary');
+    if (urges.length === 0) {
+      freqEl.textContent = 'No urges logged yet.';
+    } else {
+      const trend = thisWeek < lastWeek ? '↓ improving' : thisWeek > lastWeek ? '↑ more than last week' : '→ same as last week';
+      freqEl.innerHTML = '<strong>' + thisWeek + '</strong> this week · <strong>' + lastWeek + '</strong> last week · ' + trend;
+    }
+
+    // History
+    const list = document.getElementById('urgeList');
+    const empty = document.getElementById('urgeEmpty');
+    list.innerHTML = '';
+    const sorted = [...urges].sort((a, b) => b.ts - a.ts).slice(0, 50);
+    if (sorted.length === 0) {
+      empty.style.display = '';
+    } else {
+      empty.style.display = 'none';
+      sorted.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'urge-item';
+        item.innerHTML =
+          '<div class="urge-dot i' + u.intensity + '">' + u.intensity + '</div>' +
+          '<div class="urge-body">' +
+            (u.note ? '<div class="urge-note-text">' + esc(u.note) + '</div>' : '') +
+            '<div class="urge-meta">' + timeAgo(u.ts) + ' · intensity ' + u.intensity + '/5</div>' +
+          '</div>' +
+          '<button class="urge-del" data-id="' + u.id + '" aria-label="Delete">×</button>';
+        list.appendChild(item);
+      });
+    }
+  }
+
+  // Start date
+  document.getElementById('startDateInput').addEventListener('change', e => {
+    const d = load(); d.startDate = e.target.value; save(d); render();
+  });
+
+  // Reset to today
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (!confirm('Reset your sobriety date to today?')) return;
+    const d = load();
+    const now = new Date();
+    d.startDate = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    save(d); render();
+  });
+
+  // Intensity picker
+  document.getElementById('intensityRow').addEventListener('click', e => {
+    const btn = e.target.closest('[data-v]');
+    if (!btn) return;
+    selectedIntensity = parseInt(btn.dataset.v);
+    document.querySelectorAll('.intensity-btn').forEach(b => {
+      b.className = 'intensity-btn' + (parseInt(b.dataset.v) === selectedIntensity ? ' sel-' + selectedIntensity : '');
+    });
+    const logBtn = document.getElementById('urgeLogBtn');
+    logBtn.disabled = false;
+    logBtn.textContent = 'Log urge';
+  });
+
+  // Log urge
+  document.getElementById('urgeLogBtn').addEventListener('click', () => {
+    if (!selectedIntensity) return;
+    const note = document.getElementById('urgeNote').value.trim();
+    const d = load();
+    if (!d.urges) d.urges = [];
+    d.urges.push({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+      ts: Date.now(),
+      intensity: selectedIntensity,
+      note,
+    });
+    save(d);
+    selectedIntensity = null;
+    document.querySelectorAll('.intensity-btn').forEach(b => b.className = 'intensity-btn');
+    document.getElementById('urgeNote').value = '';
+    const logBtn = document.getElementById('urgeLogBtn');
+    logBtn.disabled = true;
+    logBtn.textContent = 'Select intensity to log';
+    render();
+  });
+
+  // Delete urge
+  document.getElementById('urgeList').addEventListener('click', e => {
+    const btn = e.target.closest('[data-id]');
+    if (!btn) return;
+    const d = load();
+    d.urges = (d.urges || []).filter(u => u.id !== btn.dataset.id);
+    save(d); render();
+  });
+
+  window.addEventListener('storage', render);
+  render();
+  setInterval(render, 60000);
+})();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof initCloudSync !== 'function') return;
+  initCloudSync({
+    appKey: 'addiction',
+    syncedKeys: ['addiction_v1'],
+    onApplied: function () { window.dispatchEvent(new Event('storage')); }
+  });
+});
+</script>
+</body>
+</html>

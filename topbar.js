@@ -195,6 +195,11 @@ body.topbar-modal-open {
     <span class="topbar-pill-dot"></span>
     <span class="topbar-pill-label">FINANCE</span>
   </a>
+  <a href="addiction.html" class="topbar-pill" id="topbarRecovery">
+    <span class="topbar-pill-dot" style="background:#A78BFA;"></span>
+    <span class="topbar-pill-label">RECOVERY</span>
+    <span class="topbar-pill-count" id="topbarRecoveryCount">—</span>
+  </a>
 </header>
 `;
 
@@ -274,6 +279,15 @@ body.topbar-modal-open {
     return { done, total };
   }
 
+  function getRecoveryDays() {
+    try {
+      const d = JSON.parse(localStorage.getItem('addiction_v1'));
+      if (!d || !d.startDate) return null;
+      const ms = Date.now() - new Date(d.startDate + 'T00:00:00').getTime();
+      return ms < 0 ? 0 : Math.floor(ms / 86400000);
+    } catch (e) { return null; }
+  }
+
   function classifyStatus(done, total) {
     if (total === 0) return 'idle';
     if (done >= total) return 'good';
@@ -309,6 +323,10 @@ body.topbar-modal-open {
     setPillStatus(goalsEl, classifyStatus(g.done, g.total));
     setPillStatus(stackEl, classifyStatus(s.done, s.total));
     setPillStatus(waterEl, classifyStatus(w.done, w.total));
+
+    const recoveryDays = getRecoveryDays();
+    const recoveryCount = document.getElementById('topbarRecoveryCount');
+    if (recoveryCount) recoveryCount.textContent = recoveryDays !== null ? recoveryDays + 'd' : '—';
   }
 
   // -------- Water +1 (works from any page) --------

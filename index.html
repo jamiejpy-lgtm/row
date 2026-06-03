@@ -1319,6 +1319,11 @@ document.addEventListener('DOMContentLoaded', function () {
       window.dispatchEvent(new Event('storage'));
     }
   });
+  initCloudSync({
+    appKey: 'health',
+    syncedKeys: ['po_water_v1'],
+    onApplied: function () { window.dispatchEvent(new Event('storage')); }
+  });
 });
 </script>
 </body>

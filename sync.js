@@ -66,7 +66,7 @@
           if (local !== incoming) { try { origSet(k, incoming); changed = true; } catch (e) {} }
         }
         for (const k of listAllKeys()) {
-          if (!(k in remote)) { try { origRemove(k); changed = true; } catch (e) {} }
+          if (!(k in remote)) { schedulePush(); break; }
         }
       } finally { suppressSync = false; }
       if (changed && typeof onApplied === 'function') { try { onApplied(); } catch (e) {} }

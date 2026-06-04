@@ -2397,9 +2397,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
       const rate = exchangeRates[symbol] || 1;
       const amountCHF = a / rate;
       const items = storeGet('nw:' + cat.key) || [];
-      items.push({ name: n, amount: amountCHF });
+      const existingIdx = items.findIndex(i => i.name.toLowerCase() === n.toLowerCase());
+      if (existingIdx !== -1) {
+        items[existingIdx].amount = amountCHF;
+        logActivity(cat.key, n, amountCHF, 'edit');
+      } else {
+        items.push({ name: n, amount: amountCHF });
+        logActivity(cat.key, n, amountCHF, 'add');
+      }
       storeSet('nw:' + cat.key, items);
-      logActivity(cat.key, n, amountCHF, 'add');
       nameInput.value = ''; amtInput.value = '';
       renderAllNetWorth();
     }

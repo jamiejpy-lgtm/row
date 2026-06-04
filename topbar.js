@@ -195,6 +195,11 @@ body.topbar-modal-open {
     <span class="topbar-pill-dot"></span>
     <span class="topbar-pill-label">FINANCE</span>
   </a>
+  <a href="steps.html" class="topbar-pill" id="topbarSteps">
+    <span class="topbar-pill-dot" style="background:#38BDF8;"></span>
+    <span class="topbar-pill-label">STEPS</span>
+    <span class="topbar-pill-count" id="topbarStepsCount">—</span>
+  </a>
   <a href="addiction.html" class="topbar-pill" id="topbarRecovery">
     <span class="topbar-pill-dot" style="background:#A78BFA;"></span>
     <span class="topbar-pill-label">RECOVERY</span>
@@ -327,6 +332,17 @@ body.topbar-modal-open {
     const recoveryDays = getRecoveryDays();
     const recoveryCount = document.getElementById('topbarRecoveryCount');
     if (recoveryCount) recoveryCount.textContent = recoveryDays !== null ? recoveryDays + 'd' : '—';
+
+    const stepsCount = document.getElementById('topbarStepsCount');
+    if (stepsCount) {
+      try {
+        const sd = JSON.parse(localStorage.getItem('steps_v1')) || {};
+        const d = new Date();
+        const tk = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        const s = (sd.logs || {})[tk] || 0;
+        stepsCount.textContent = s > 0 ? (s >= 1000 ? (s/1000).toFixed(1).replace(/\.0$/,'') + 'k' : s) : '—';
+      } catch (e) { stepsCount.textContent = '—'; }
+    }
   }
 
   // -------- Water +1 (works from any page) --------

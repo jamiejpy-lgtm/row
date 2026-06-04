@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050506">
+<meta name="color-scheme" content="dark">
+<title>Steps</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync.js" defer></script>
+<script src="topbar.js" defer></script>
+<style>
+:root {
+  --bg: #050506;
+  --bg-card: rgba(255,255,255,0.04);
+  --bg-secondary: rgba(255,255,255,0.035);
+  --bg-input: rgba(0,0,0,0.28);
+  --border: rgba(255,255,255,0.06);
+  --border-soft: rgba(255,255,255,0.04);
+  --border-strong: rgba(255,255,255,0.12);
+  --text-primary: #FAFAFA;
+  --text-secondary: #B8B6B0;
+  --text-tertiary: #76746E;
+  --text-quaternary: #4D4B47;
+  --accent: #38BDF8;
+  --accent-glow: rgba(56,189,248,0.25);
+  --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+body { min-height: 100vh; position: relative; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background:
+    radial-gradient(60% 50% at 70% 8%, rgba(56,189,248,0.14) 0%, transparent 60%),
+    radial-gradient(50% 40% at 15% 88%, rgba(56,189,248,0.06) 0%, transparent 60%);
+  filter: blur(40px); pointer-events: none; z-index: 0;
+  animation: drift 36s ease-in-out infinite alternate;
+}
+body::after {
+  content: ''; position: fixed; inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.014) 1px, transparent 1px);
+  background-size: 3px 3px; pointer-events: none; z-index: 1;
+}
+@keyframes drift { 0% { transform: translate(0,0); } 100% { transform: translate(-2%,2%); } }
+
+main {
+  position: relative; z-index: 2;
+  max-width: 720px; margin: 0 auto;
+  padding: 56px 20px 80px;
+  padding-top: max(56px, env(safe-area-inset-top, 56px));
+}
+
+.section-title {
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 4px 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-title::before { content: '≡'; font-size: 14px; opacity: 0.5; }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 16px;
+}
+
+/* Today card */
+.today-hero { text-align: center; padding: 28px 22px 22px; }
+.today-steps-num {
+  font-size: 72px; font-weight: 800; line-height: 1; letter-spacing: -2px;
+  color: var(--text-primary); font-variant-numeric: tabular-nums;
+}
+.today-steps-num.at-goal { color: var(--accent); }
+.today-label {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-top: 6px;
+}
+.today-progress-track {
+  height: 5px; background: var(--bg-secondary);
+  border-radius: 99px; margin: 18px 0 14px; overflow: hidden;
+}
+.today-progress-fill {
+  height: 100%; background: var(--accent);
+  border-radius: 99px; transition: width 0.4s ease;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+.today-goal-label {
+  font-size: 13px; color: var(--text-tertiary);
+}
+.today-goal-label strong { color: var(--text-secondary); font-weight: 500; }
+
+/* Log + goal row */
+.log-row {
+  display: flex; gap: 10px; align-items: flex-end;
+}
+.log-field { flex: 1; }
+.log-field label {
+  display: block; font-family: var(--font-mono);
+  font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-bottom: 6px;
+}
+.log-input {
+  width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 18px; font-weight: 700;
+  padding: 10px 14px; outline: none;
+  transition: border-color 0.15s;
+  -moz-appearance: textfield;
+}
+.log-input::-webkit-inner-spin-button,
+.log-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.log-input:focus { border-color: var(--accent); }
+.log-input::placeholder { color: var(--text-quaternary); font-weight: 400; font-size: 15px; }
+.log-btn {
+  background: var(--accent); border: none; border-radius: 10px;
+  color: #000; font-family: var(--font); font-size: 14px; font-weight: 700;
+  padding: 11px 20px; cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.log-btn:hover { opacity: 0.88; }
+.log-btn:active { transform: scale(0.97); }
+
+/* Chart */
+.chart-wrap {
+  display: flex; align-items: flex-end; gap: 4px;
+  height: 100px; margin-bottom: 10px;
+}
+.chart-bar-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; height: 100%; gap: 4px;
+}
+.chart-bar {
+  width: 100%; border-radius: 4px 4px 0 0;
+  background: rgba(56,189,248,0.25);
+  align-self: flex-end; min-height: 3px;
+  transition: height 0.35s ease;
+  cursor: default;
+  position: relative;
+}
+.chart-bar.today { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+.chart-bar.at-goal { background: #34d399; }
+.chart-bar.today.at-goal { background: #34d399; box-shadow: 0 0 8px rgba(52,211,153,0.3); }
+.chart-bar-label {
+  font-family: var(--font-mono); font-size: 8px; color: var(--text-quaternary);
+  white-space: nowrap;
+}
+.chart-bar-label.today { color: var(--accent); }
+.chart-goal-line {
+  position: absolute; left: -2px; right: -2px;
+  border-top: 1px dashed rgba(56,189,248,0.35);
+  pointer-events: none;
+}
+.chart-legend {
+  display: flex; gap: 16px; margin-top: 6px;
+  font-size: 12px; color: var(--text-tertiary);
+}
+.chart-legend-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 2px; margin-right: 5px; vertical-align: middle;
+}
+
+/* History */
+.history-list { display: flex; flex-direction: column; gap: 1px; }
+.history-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.history-row:last-child { border-bottom: none; }
+.history-date { font-size: 13px; color: var(--text-tertiary); width: 90px; flex-shrink: 0; }
+.history-bar-track {
+  flex: 1; height: 5px; background: var(--bg-secondary); border-radius: 99px; overflow: hidden;
+}
+.history-bar-fill {
+  height: 100%; border-radius: 99px; background: rgba(56,189,248,0.4);
+  transition: width 0.3s;
+}
+.history-bar-fill.at-goal { background: #34d399; }
+.history-steps {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  color: var(--text-secondary); width: 56px; text-align: right; flex-shrink: 0;
+}
+.history-steps.at-goal { color: #34d399; }
+.history-empty {
+  font-size: 13px; color: var(--text-quaternary); text-align: center; padding: 20px 0;
+}
+
+.attribution {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--text-quaternary); text-align: center; padding-top: 32px;
+}
+</style>
+</head>
+<body>
+<main>
+
+  <div class="section-title">Today</div>
+  <div class="card today-hero">
+    <div class="today-steps-num" id="todayNum">—</div>
+    <div class="today-label">steps today</div>
+    <div class="today-progress-track">
+      <div class="today-progress-fill" id="todayBar" style="width:0%"></div>
+    </div>
+    <div class="today-goal-label" id="todayGoalLabel">Goal: <strong id="goalDisplay">—</strong> steps</div>
+  </div>
+
+  <div class="section-title" style="margin-top:8px;">Log steps</div>
+  <div class="card">
+    <div class="log-row">
+      <div class="log-field">
+        <label for="stepsInput">Steps today</label>
+        <input type="number" id="stepsInput" class="log-input" placeholder="e.g. 8500" min="0" max="99999" inputmode="numeric" />
+      </div>
+      <div class="log-field" style="max-width:160px;">
+        <label for="goalInput">Daily goal</label>
+        <input type="number" id="goalInput" class="log-input" placeholder="10000" min="1" max="99999" inputmode="numeric" />
+      </div>
+      <button class="log-btn" id="logBtn">Save</button>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:8px;">Last 30 days</div>
+  <div class="card">
+    <div class="chart-wrap" id="chart"></div>
+    <div class="chart-legend">
+      <span><span class="chart-legend-dot" style="background:rgba(56,189,248,0.4)"></span>Steps</span>
+      <span><span class="chart-legend-dot" style="background:#34d399"></span>Goal reached</span>
+      <span><span class="chart-legend-dot" style="background:var(--accent)"></span>Today</span>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:8px;">History</div>
+  <div class="card">
+    <div class="history-list" id="historyList"></div>
+    <div class="history-empty" id="historyEmpty">No steps logged yet.</div>
+  </div>
+
+  <div class="attribution">// steps tracker · data syncs across your devices</div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const KEY = 'steps_v1';
+  const DEFAULT_GOAL = 10000;
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; }
+  }
+  function save(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
+
+  function todayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function fmtDate(k) {
+    const d = new Date(k + 'T00:00:00');
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function fmtSteps(n) {
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(n);
+  }
+
+  function render() {
+    const data = load();
+    const goal = data.goal || DEFAULT_GOAL;
+    const logs = data.logs || {};
+    const today = todayKey();
+    const todaySteps = logs[today] || 0;
+
+    // Hero
+    const todayNum = document.getElementById('todayNum');
+    todayNum.textContent = todaySteps > 0 ? todaySteps.toLocaleString() : '—';
+    todayNum.className = 'today-steps-num' + (todaySteps >= goal ? ' at-goal' : '');
+    const pct = goal > 0 ? Math.min(100, Math.round((todaySteps / goal) * 100)) : 0;
+    document.getElementById('todayBar').style.width = pct + '%';
+    document.getElementById('goalDisplay').textContent = goal.toLocaleString();
+
+    // Prefill inputs
+    const stepsInput = document.getElementById('stepsInput');
+    const goalInput = document.getElementById('goalInput');
+    if (todaySteps > 0 && document.activeElement !== stepsInput) stepsInput.value = todaySteps;
+    if (document.activeElement !== goalInput) goalInput.value = goal;
+
+    // Chart — last 30 days
+    const chart = document.getElementById('chart');
+    chart.innerHTML = '';
+    const days = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const k = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      days.push({ k, steps: logs[k] || 0, isToday: k === today });
+    }
+    const maxSteps = Math.max(goal, ...days.map(d => d.steps), 1);
+    days.forEach((day, i) => {
+      const heightPct = day.steps > 0 ? Math.max(3, Math.round((day.steps / maxSteps) * 100)) : 2;
+      const goalHeightPct = Math.round((goal / maxSteps) * 100);
+      const atGoal = day.steps >= goal;
+      const wrap = document.createElement('div');
+      wrap.className = 'chart-bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar' + (day.isToday ? ' today' : '') + (atGoal && day.steps > 0 ? ' at-goal' : '');
+      bar.style.height = heightPct + '%';
+      bar.title = fmtDate(day.k) + ': ' + (day.steps > 0 ? day.steps.toLocaleString() + ' steps' : 'no data');
+      // goal dashed line on each bar
+      const goalLine = document.createElement('div');
+      goalLine.className = 'chart-goal-line';
+      goalLine.style.bottom = ((goalHeightPct / heightPct) * 100) + '%';
+      if (day.steps > 0 && day.steps < goal) bar.appendChild(goalLine);
+      const label = document.createElement('div');
+      label.className = 'chart-bar-label' + (day.isToday ? ' today' : '');
+      const showLabel = day.isToday || i === 0 || i === 29 || new Date(day.k + 'T00:00:00').getDate() === 1;
+      label.textContent = showLabel ? (day.isToday ? 'T' : new Date(day.k + 'T00:00:00').toLocaleDateString(undefined, {month:'short'}).slice(0,1) + new Date(day.k + 'T00:00:00').getDate()) : '';
+      wrap.appendChild(bar);
+      wrap.appendChild(label);
+      chart.appendChild(wrap);
+    });
+
+    // History list (most recent first, last 30)
+    const histList = document.getElementById('historyList');
+    const histEmpty = document.getElementById('historyEmpty');
+    histList.innerHTML = '';
+    const entries = Object.entries(logs)
+      .filter(([, v]) => v > 0)
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .slice(0, 30);
+    if (entries.length === 0) {
+      histEmpty.style.display = '';
+    } else {
+      histEmpty.style.display = 'none';
+      const maxEntry = Math.max(...entries.map(([, v]) => v), goal);
+      entries.forEach(([k, steps]) => {
+        const atGoal = steps >= goal;
+        const row = document.createElement('div');
+        row.className = 'history-row';
+        const pct = Math.min(100, Math.round((steps / maxEntry) * 100));
+        row.innerHTML =
+          '<div class="history-date">' + fmtDate(k) + (k === today ? ' <span style="color:var(--accent);font-size:10px;">today</span>' : '') + '</div>' +
+          '<div class="history-bar-track"><div class="history-bar-fill' + (atGoal ? ' at-goal' : '') + '" style="width:' + pct + '%"></div></div>' +
+          '<div class="history-steps' + (atGoal ? ' at-goal' : '') + '">' + fmtSteps(steps) + '</div>';
+        histList.appendChild(row);
+      });
+    }
+  }
+
+  document.getElementById('logBtn').addEventListener('click', () => {
+    const stepsVal = parseInt(document.getElementById('stepsInput').value);
+    const goalVal  = parseInt(document.getElementById('goalInput').value);
+    if (isNaN(stepsVal) && isNaN(goalVal)) return;
+    const d = load();
+    if (!d.logs) d.logs = {};
+    if (!isNaN(stepsVal) && stepsVal >= 0) d.logs[todayKey()] = stepsVal;
+    if (!isNaN(goalVal) && goalVal > 0) d.goal = goalVal;
+    save(d);
+    render();
+  });
+
+  // Allow Enter to save
+  [document.getElementById('stepsInput'), document.getElementById('goalInput')].forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('logBtn').click(); });
+  });
+
+  window.addEventListener('storage', render);
+  render();
+  setInterval(render, 60000);
+})();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof initCloudSync !== 'function') return;
+  initCloudSync({
+    appKey: 'steps',
+    syncedKeys: ['steps_v1'],
+    onApplied: function () { window.dispatchEvent(new Event('storage')); }
+  });
+});
+</script>
+</body>
+</html>

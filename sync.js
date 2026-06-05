@@ -111,7 +111,20 @@
         const { data, error } = await supa.from('app_state').select('data').eq('key', appKey).maybeSingle();
         if (!error && data && data.data && Object.keys(data.data).length > 0) {
           lastSyncedJson = JSON.stringify(data.data);
-          applyRemote(data.data);
+          // On initial load only fill in keys absent from local — never overwrite
+          // existing local data (guards against corrupted remote overwriting good local).
+          suppressSync = true;
+          let applied = false;
+          try {
+            for (const k of Object.keys(data.data)) {
+              if (!matches(k)) continue;
+              if (localStorage.getItem(k) === null) {
+                try { origSet(k, JSON.stringify(data.data[k])); applied = true; } catch (e) {}
+              }
+            }
+          } finally { suppressSync = false; }
+          if (applied && typeof onApplied === 'function') { try { onApplied(); } catch (e) {} }
+          schedulePush(); // push local state so remote gets corrected
         } else if (Object.keys(collect()).length > 0) {
           schedulePush();
         }

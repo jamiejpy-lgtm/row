@@ -2874,10 +2874,10 @@ img, video, canvas, svg { max-width: 100%; }
         headline = '+' + weightDelta.toFixed(1) + ' ' + state.units + ' — mostly muscle, strength up.';
       } else if (musclePct >= 0.35) {
         headlineCls = 'warn';
-        headline = '+' + weightDelta.toFixed(1) + ' ' + state.units + ' — mixed. Tighten kcal or push lifts harder.';
+        headline = '+' + weightDelta.toFixed(1) + ' ' + state.units + ' — mixed bulk. Keep lifting heavy.';
       } else {
-        headlineCls = 'bad';
-        headline = '+' + weightDelta.toFixed(1) + ' ' + state.units + ' — mostly fat. Strength flat. Cut kcal.';
+        headlineCls = 'warn';
+        headline = '+' + weightDelta.toFixed(1) + ' ' + state.units + ' — bulk phase. Push lifts harder to convert surplus into muscle.';
       }
     } else {
       // Deficit: assume fat first, only credit muscle loss if strength dropped.

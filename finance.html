@@ -1950,23 +1950,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   const netWorthBreakdown = document.getElementById('netWorthBreakdown');
 
   let exchangeRates = { CHF: 1, USD: 1, EUR: 1, GBP: 1 };
-  async function loadExchangeRates() {
-    try {
-      const res = await fetch('https://open.er-api.com/v6/latest/CHF');
-      const data = await res.json();
-      if (data && data.rates) {
-        exchangeRates = {
-          CHF: 1,
-          USD: data.rates.USD || 1,
-          EUR: data.rates.EUR || 1,
-          GBP: data.rates.GBP || 1
-        };
-        renderAllNetWorth();
-        if (typeof renderSubs === 'function') renderSubs();
-      }
-    } catch (e) {}
-  }
-  loadExchangeRates();
 
   function fmtMoney(amountCHF) {
     const symbol = currencyEl ? currencyEl.value : 'CHF';

@@ -948,6 +948,31 @@ img, video, canvas, svg { max-width: 100%; }
   height: 2px;
 }
 
+/* Calorie inputs */
+.wt-cal-row {
+  display: flex; gap: 10px; margin-bottom: 14px;
+}
+.wt-cal-field { flex: 1; }
+.wt-cal-label {
+  display: block; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 5px;
+}
+.wt-cal-input-wrap { display: flex; align-items: center; gap: 6px; }
+.wt-cal-input {
+  flex: 1; min-width: 0;
+  background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-1);
+  font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+  padding: 7px 10px; outline: none;
+  -moz-appearance: textfield;
+  transition: border-color 0.15s;
+}
+.wt-cal-input::-webkit-inner-spin-button,
+.wt-cal-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.wt-cal-input:focus { border-color: rgba(110,231,183,0.4); }
+.wt-cal-unit { font-size: 11px; color: var(--text-4); white-space: nowrap; }
+
 /* Composition estimate */
 .wt-comp {
   margin-top: 18px; padding: 14px 16px;
@@ -1320,6 +1345,22 @@ img, video, canvas, svg { max-width: 100%; }
         <div class="wt-comp-h">
           <span class="wt-comp-label">Composition estimate</span>
           <span class="wt-comp-window" id="wtCompWindow">last 30d</span>
+        </div>
+        <div class="wt-cal-row">
+          <div class="wt-cal-field">
+            <label class="wt-cal-label" for="wtMaintenance">Maintenance</label>
+            <div class="wt-cal-input-wrap">
+              <input type="number" id="wtMaintenance" class="wt-cal-input" placeholder="e.g. 2700" inputmode="numeric" min="1000" max="9999">
+              <span class="wt-cal-unit">kcal/day</span>
+            </div>
+          </div>
+          <div class="wt-cal-field">
+            <label class="wt-cal-label" for="wtIntake">Avg daily intake</label>
+            <div class="wt-cal-input-wrap">
+              <input type="number" id="wtIntake" class="wt-cal-input" placeholder="e.g. 4000" inputmode="numeric" min="1000" max="9999">
+              <span class="wt-cal-unit">kcal/day</span>
+            </div>
+          </div>
         </div>
         <div class="wt-comp-headline" id="wtCompHeadline">—</div>
         <div class="wt-comp-bars" id="wtCompBars"></div>
@@ -2902,14 +2943,34 @@ img, video, canvas, svg { max-width: 100%; }
     const strengthBoost = Math.max(0.5, Math.min(1.5, 1 + strengthDelta * 4));
     let estMuscle = maxMusclePerWeek * weeks * strengthBoost * frequencyFactor;
 
+    // Read calorie inputs if provided
+    let calData = {};
+    try { calData = JSON.parse(localStorage.getItem('comp_cal_v1')) || {}; } catch (e) {}
+    const maintenance = calData.maintenance || 0;
+    const intake      = calData.intake || 0;
+    const hasCalData  = maintenance > 0 && intake > 0;
+
     let estFat;
     let headlineCls = '';
     let headline = '';
+    let calorieBased = false;
     if (weightDelta > 0) {
-      // Surplus: split between muscle and fat. Subtract water buffer before fat.
       estMuscle = Math.min(estMuscle, weightDelta);
-      estFat = Math.max(0, weightDelta - estMuscle - waterBuffer);
-      const musclePct = estMuscle / Math.max(weightDelta - waterBuffer, estMuscle);
+      if (hasCalData) {
+        // Calorie-based fat estimate: surplus calories minus what goes to muscle synthesis
+        // Building 1 kg of muscle tissue costs ~2500 kcal above maintenance
+        const dailySurplus = intake - maintenance;
+        const weeklySurplusCal = dailySurplus * 7;
+        const muscleSynthesisCost = (estMuscle / weeks) * 2500 * (unitConv > 1 ? 1 / unitConv : 1); // in kcal/week (kg basis)
+        const fatCal = Math.max(0, weeklySurplusCal * weeks - muscleSynthesisCost * weeks);
+        const fatPerKcal = unitConv > 1 ? 3500 : 7700; // lb vs kg
+        estFat = Math.max(0, fatCal / fatPerKcal);
+        calorieBased = true;
+      } else {
+        estFat = Math.max(0, weightDelta - estMuscle - waterBuffer);
+      }
+      const base = hasCalData ? Math.max(estMuscle + estFat, 0.01) : Math.max(weightDelta - waterBuffer, estMuscle);
+      const musclePct = estMuscle / base;
       if (musclePct >= 0.6 && strengthDelta > 0) {
         headlineCls = 'good';
         headline = '+' + weightDelta.toFixed(1) + ' ' + state.units + ' — mostly muscle, strength up.';
@@ -2962,9 +3023,10 @@ img, video, canvas, svg { max-width: 100%; }
     const fatSign = estFat >= 0 ? '+' : '';
     const freqStr = sessionsPerWeek.toFixed(1) + ' sessions/wk';
     const stepsStr = avgStepsPerDay > 0 ? ' · ' + Math.round(avgStepsPerDay / 1000) + 'k steps/day' : '';
-    const waterStr = waterBuffer > 0 ? ' · ~' + waterBuffer.toFixed(1) + ' ' + state.units + ' water/glycogen excluded' : '';
+    const waterStr = !calorieBased && waterBuffer > 0 ? ' · ~' + waterBuffer.toFixed(1) + ' ' + state.units + ' water/glycogen excluded' : '';
     const caveat = actualDays < 21 ? ' · ⚠ short window — scale fluctuates ±2–4 lb from water alone; check trend over 4+ weeks' : '';
     const neuralNote = strengthDelta > 0.05 ? ' · strength rising fast — likely strong neural adaptation on top of tissue growth' : '';
+    const calStr = calorieBased ? ' · based on ' + (intake - maintenance > 0 ? '+' : '') + (intake - maintenance) + ' kcal/day surplus' : ' · add calories above for a more accurate estimate';
     $('wtCompFoot').textContent =
       '~' + muscleSign + estMuscle.toFixed(1) + ' ' + state.units + ' muscle · '
       + '~' + fatSign + estFat.toFixed(1) + ' ' + state.units + ' fat'
@@ -2972,10 +3034,33 @@ img, video, canvas, svg { max-width: 100%; }
       + ' · strength ' + sdStr
       + ' · ' + freqStr
       + stepsStr
+      + calStr
       + (strengthRatios.length ? '' : ' · no lift data')
       + caveat
       + neuralNote;
+
+    // Prefill calorie inputs from saved data
+    const mEl = $('wtMaintenance'), iEl = $('wtIntake');
+    if (mEl && calData.maintenance && document.activeElement !== mEl) mEl.value = calData.maintenance;
+    if (iEl && calData.intake && document.activeElement !== iEl) iEl.value = calData.intake;
   }
+
+  // Wire calorie inputs
+  function saveCalData() {
+    const m = parseInt($('wtMaintenance').value);
+    const i = parseInt($('wtIntake').value);
+    const d = {};
+    if (!isNaN(m) && m > 0) d.maintenance = m;
+    if (!isNaN(i) && i > 0) d.intake = i;
+    localStorage.setItem('comp_cal_v1', JSON.stringify(d));
+    wtRenderComposition();
+  }
+  ['wtMaintenance', 'wtIntake'].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener('change', saveCalData);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { el.blur(); saveCalData(); } });
+  });
 
   // Wire weight UI
   $('wtSaveBtn').addEventListener('click', () => {

@@ -2857,9 +2857,11 @@ img, video, canvas, svg { max-width: 100%; }
     // Max muscle gain rate per week (kg). Convert to lb if user's units are lb.
     const yt = CONFIG.composition.yearsTraining || 1;
     let maxMuscleKgPerWeek;
-    if (yt <= 1) maxMuscleKgPerWeek = 0.45;
-    else if (yt === 2) maxMuscleKgPerWeek = 0.23;
-    else maxMuscleKgPerWeek = 0.11;
+    // Slightly raised for year 1 to credit muscle memory / beginner adaptation.
+    // Beyond year 1 the ceiling is well-established and doesn't move much.
+    if (yt <= 1) maxMuscleKgPerWeek = 0.65;
+    else if (yt === 2) maxMuscleKgPerWeek = 0.28;
+    else maxMuscleKgPerWeek = 0.13;
     const unitConv = (state.units === 'lb') ? 2.20462 : 1;
 
     // Activity multiplier from steps data — more steps = more metabolic activity
@@ -2962,6 +2964,7 @@ img, video, canvas, svg { max-width: 100%; }
     const stepsStr = avgStepsPerDay > 0 ? ' · ' + Math.round(avgStepsPerDay / 1000) + 'k steps/day' : '';
     const waterStr = waterBuffer > 0 ? ' · ~' + waterBuffer.toFixed(1) + ' ' + state.units + ' water/glycogen excluded' : '';
     const caveat = actualDays < 21 ? ' · ⚠ short window — scale fluctuates ±2–4 lb from water alone; check trend over 4+ weeks' : '';
+    const neuralNote = strengthDelta > 0.05 ? ' · strength rising fast — likely strong neural adaptation on top of tissue growth' : '';
     $('wtCompFoot').textContent =
       '~' + muscleSign + estMuscle.toFixed(1) + ' ' + state.units + ' muscle · '
       + '~' + fatSign + estFat.toFixed(1) + ' ' + state.units + ' fat'
@@ -2970,7 +2973,8 @@ img, video, canvas, svg { max-width: 100%; }
       + ' · ' + freqStr
       + stepsStr
       + (strengthRatios.length ? '' : ' · no lift data')
-      + caveat;
+      + caveat
+      + neuralNote;
   }
 
   // Wire weight UI

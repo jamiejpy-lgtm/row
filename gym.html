@@ -2861,7 +2861,35 @@ img, video, canvas, svg { max-width: 100%; }
     else if (yt === 2) maxMuscleKgPerWeek = 0.23;
     else maxMuscleKgPerWeek = 0.11;
     const unitConv = (state.units === 'lb') ? 2.20462 : 1;
-    const maxMusclePerWeek = maxMuscleKgPerWeek * unitConv;
+
+    // Activity multiplier from steps data — more steps = more metabolic activity
+    // = higher muscle-building ceiling and better nutrient partitioning.
+    let stepsActivityFactor = 1.0;
+    let avgStepsPerDay = 0;
+    try {
+      const stepsData = JSON.parse(localStorage.getItem('steps_v1')) || {};
+      const stepsLogs = stepsData.logs || {};
+      let totalSteps = 0, stepDays = 0;
+      for (let i = 0; i < actualDays; i++) {
+        const d = new Date(wtParseKey(endEntry.dateKey));
+        d.setDate(d.getDate() - i);
+        const k = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        if (stepsLogs[k]) { totalSteps += stepsLogs[k]; stepDays++; }
+      }
+      if (stepDays > 0) {
+        avgStepsPerDay = totalSteps / stepDays;
+        if (avgStepsPerDay >= 20000) stepsActivityFactor = 2.0;
+        else if (avgStepsPerDay >= 15000) stepsActivityFactor = 1.6;
+        else if (avgStepsPerDay >= 10000) stepsActivityFactor = 1.3;
+      }
+    } catch (e) {}
+
+    const maxMusclePerWeek = maxMuscleKgPerWeek * unitConv * stepsActivityFactor;
+
+    // Water/glycogen buffer — high-frequency training increases glycogen stores
+    // and water retention; this weight is real on the scale but isn't fat.
+    const waterBufKg = sessionsPerWeek >= 4 ? 0.5 : (sessionsPerWeek >= 2 ? 0.25 : 0);
+    const waterBuffer = waterBufKg * unitConv;
 
     // Estimated muscle: scale by strength gain (capped between 0.5x and 1.5x)
     // AND by training frequency (you can't build muscle you didn't stimulate).
@@ -2872,10 +2900,10 @@ img, video, canvas, svg { max-width: 100%; }
     let headlineCls = '';
     let headline = '';
     if (weightDelta > 0) {
-      // Surplus: split between muscle and fat. Cap muscle at the weight gained.
+      // Surplus: split between muscle and fat. Subtract water buffer before fat.
       estMuscle = Math.min(estMuscle, weightDelta);
-      estFat = Math.max(0, weightDelta - estMuscle);
-      const musclePct = estMuscle / weightDelta;
+      estFat = Math.max(0, weightDelta - estMuscle - waterBuffer);
+      const musclePct = estMuscle / Math.max(weightDelta - waterBuffer, estMuscle);
       if (musclePct >= 0.6 && strengthDelta > 0) {
         headlineCls = 'good';
         headline = '+' + weightDelta.toFixed(1) + ' ' + state.units + ' — mostly muscle, strength up.';
@@ -2927,11 +2955,15 @@ img, video, canvas, svg { max-width: 100%; }
     const muscleSign = estMuscle >= 0 ? '+' : '';
     const fatSign = estFat >= 0 ? '+' : '';
     const freqStr = sessionsPerWeek.toFixed(1) + ' sessions/wk';
+    const stepsStr = avgStepsPerDay > 0 ? ' · ' + Math.round(avgStepsPerDay / 1000) + 'k steps/day' : '';
+    const waterStr = waterBuffer > 0 ? ' · ~' + waterBuffer.toFixed(1) + ' ' + state.units + ' water/glycogen' : '';
     $('wtCompFoot').textContent =
       '~' + muscleSign + estMuscle.toFixed(1) + ' ' + state.units + ' muscle · '
-      + '~' + fatSign + estFat.toFixed(1) + ' ' + state.units + ' fat · '
-      + 'strength ' + sdStr
+      + '~' + fatSign + estFat.toFixed(1) + ' ' + state.units + ' fat'
+      + waterStr
+      + ' · strength ' + sdStr
       + ' · ' + freqStr
+      + stepsStr
       + (strengthRatios.length ? '' : ' (no lift data)');
   }
 

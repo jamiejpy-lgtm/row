@@ -2833,9 +2833,16 @@ img, video, canvas, svg { max-width: 100%; }
         workoutDays.add(l.date.slice(0, 10));
         totalVolumeInWindow += (l.weight || 0) * (l.reps || 0);
       });
-      if (!inWin.length || !before.length) return;
+      if (!inWin.length) return;
       const avg = arr => arr.reduce((s, l) => s + estimate1RM(l.weight, l.reps), 0) / arr.length;
-      const a = avg(before), b = avg(inWin);
+      let a, b;
+      if (before.length) {
+        a = avg(before); b = avg(inWin);
+      } else if (inWin.length >= 2) {
+        // No pre-window logs — compare first half vs second half of what we have
+        const mid = Math.floor(inWin.length / 2);
+        a = avg(inWin.slice(0, mid)); b = avg(inWin.slice(mid));
+      } else { return; }
       if (a <= 0) return;
       strengthRatios.push(b / a);
     });

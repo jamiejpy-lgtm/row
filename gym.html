@@ -864,6 +864,91 @@ img, video, canvas, svg { max-width: 100%; }
 }
 
 /* ============================================================
+   5K TRACKER — scoped under .fk-*
+   ============================================================ */
+.fk-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 18px 14px; margin-top: 6px;
+}
+.fk-hero { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.fk-time-num {
+  font-size: 48px; font-weight: 800; line-height: 1;
+  letter-spacing: -2px; color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.fk-time-unit { font-size: 16px; color: var(--text-3); }
+.fk-pb-row {
+  display: flex; gap: 16px; margin: 6px 0 16px;
+  font-size: 12px; color: var(--text-3);
+}
+.fk-pb-val { color: var(--good); font-weight: 700; }
+.fk-streak { color: var(--warn); font-weight: 700; }
+.fk-log-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+.fk-time-inputs { display: flex; align-items: center; gap: 4px; flex: 1; }
+.fk-input {
+  background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-1);
+  font-family: var(--font-mono); font-size: 18px; font-weight: 700;
+  text-align: center; outline: none; padding: 8px 4px;
+  -moz-appearance: textfield; transition: border-color 0.15s;
+}
+.fk-input::-webkit-inner-spin-button,
+.fk-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.fk-input:focus { border-color: rgba(110,231,183,0.4); }
+.fk-input-mm { width: 52px; }
+.fk-input-ss { width: 52px; }
+.fk-sep { font-size: 20px; font-weight: 700; color: var(--text-3); }
+.fk-log-btn {
+  background: var(--good); border: none; border-radius: 9px;
+  color: #000; font-family: var(--font); font-size: 13px; font-weight: 700;
+  padding: 10px 16px; cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.fk-log-btn:hover { opacity: 0.88; }
+.fk-log-btn:active { transform: scale(0.97); }
+/* Chart */
+.fk-chart-wrap { position: relative; height: 80px; margin: 0 0 8px; }
+.fk-chart { width: 100%; height: 100%; overflow: visible; }
+.fk-grid-line { stroke: rgba(255,255,255,0.05); stroke-width: 1; }
+.fk-area { fill: url(#fkFill); }
+.fk-line { fill: none; stroke: var(--good); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.fk-dot { fill: var(--good); stroke: var(--bg-card); stroke-width: 1.5; }
+.fk-dot-today { fill: #fff; stroke: var(--good); stroke-width: 2; }
+.fk-yaxis {
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: absolute; top: 0; left: 0; bottom: 16px;
+  font-size: 9px; font-family: var(--font-mono); color: var(--text-4);
+  pointer-events: none;
+}
+.fk-legend {
+  display: flex; gap: 14px; margin-top: 4px;
+  font-size: 11px; color: var(--text-3);
+}
+.fk-legend-dot {
+  display: inline-block; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--good); margin-right: 4px; vertical-align: middle;
+}
+/* History */
+.fk-history { display: flex; flex-direction: column; gap: 1px; margin-top: 10px; }
+.fk-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.fk-row:last-child { border-bottom: none; }
+.fk-row-date { font-size: 12px; color: var(--text-3); width: 80px; flex-shrink: 0; }
+.fk-row-bar-track { flex: 1; height: 4px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+.fk-row-bar { height: 100%; border-radius: 99px; background: var(--good); transition: width 0.3s; }
+.fk-row-time { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-1); width: 50px; text-align: right; flex-shrink: 0; }
+.fk-row-del {
+  background: none; border: none; color: var(--text-4);
+  font-size: 16px; cursor: pointer; padding: 0 2px;
+  opacity: 0; transition: opacity 0.15s;
+}
+.fk-row:hover .fk-row-del { opacity: 1; }
+.fk-row-pb { font-size: 10px; color: var(--good); font-weight: 700; margin-left: 4px; }
+.fk-empty { font-size: 12px; color: var(--text-4); text-align: center; padding: 12px 0; }
+
+/* ============================================================
    WEIGHT TRACKER + PROGRESS PHOTOS — scoped under .wt-* so the
    styles can't leak into the rest of the app.
    ============================================================ */
@@ -1394,6 +1479,47 @@ img, video, canvas, svg { max-width: 100%; }
       </div>
       <span class="wt-progress-arrow">→</span>
     </button>
+  </div>
+
+  <!-- 5K TRACKER -->
+  <div class="wt-section">
+    <div class="wt-divider"><span>5K</span></div>
+    <div class="fk-card">
+      <div class="fk-hero">
+        <span class="fk-time-num" id="fkLastTime">—</span>
+        <span class="fk-time-unit">last run</span>
+      </div>
+      <div class="fk-pb-row">
+        <span>PB <span class="fk-pb-val" id="fkPb">—</span></span>
+        <span id="fkStreakWrap" style="display:none">🔥 <span class="fk-streak" id="fkStreak">0 day streak</span></span>
+      </div>
+      <div class="fk-log-row">
+        <div class="fk-time-inputs">
+          <input type="number" id="fkMins" class="fk-input fk-input-mm" placeholder="mm" min="0" max="99" inputmode="numeric">
+          <span class="fk-sep">:</span>
+          <input type="number" id="fkSecs" class="fk-input fk-input-ss" placeholder="ss" min="0" max="59" inputmode="numeric">
+        </div>
+        <button class="fk-log-btn" id="fkLogBtn">Log run</button>
+      </div>
+      <div style="position:relative;">
+        <div class="fk-yaxis" id="fkYAxis"><span></span><span></span></div>
+        <div class="fk-chart-wrap" id="fkChartWrap" style="display:none; padding-left:28px;">
+          <svg class="fk-chart" id="fkChart" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="fkFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--good)" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="var(--good)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+      <div class="fk-legend" id="fkLegend" style="display:none;">
+        <span><span class="fk-legend-dot"></span>Time (lower = faster)</span>
+      </div>
+      <div class="fk-history" id="fkHistory"></div>
+      <div class="fk-empty" id="fkEmpty">No runs logged yet — smash that first 5k.</div>
+    </div>
   </div>
 
   <!-- Progress photos overlay -->
@@ -3392,6 +3518,208 @@ img, video, canvas, svg { max-width: 100%; }
   renderAll();
   wtRender();
   photosRender();
+
+  // ============================================================
+  // 5K TRACKER
+  // ============================================================
+  const FK_KEY = 'fivek_v1';
+
+  function fkLoad() {
+    try { return JSON.parse(localStorage.getItem(FK_KEY)) || { runs: [] }; } catch { return { runs: [] }; }
+  }
+  function fkSave(d) { localStorage.setItem(FK_KEY, JSON.stringify(d)); }
+
+  function fkFmt(secs) {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  function fkTodayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function fkFmtDate(k) {
+    return new Date(k + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function fkRender() {
+    const data = fkLoad();
+    const runs = data.runs || [];
+
+    const lastRun = runs.length ? runs[runs.length - 1] : null;
+    const pb = runs.length ? Math.min(...runs.map(r => r.secs)) : null;
+
+    document.getElementById('fkLastTime').textContent = lastRun ? fkFmt(lastRun.secs) : '—';
+    document.getElementById('fkPb').textContent = pb !== null ? fkFmt(pb) : '—';
+
+    // Streak
+    const streakWrap = document.getElementById('fkStreakWrap');
+    const streakEl = document.getElementById('fkStreak');
+    if (runs.length > 0) {
+      const today = fkTodayKey();
+      let streak = 0;
+      const keys = [...new Set(runs.map(r => r.date))].sort().reverse();
+      let expected = today;
+      for (const k of keys) {
+        if (k === expected) {
+          streak++;
+          const d = new Date(k + 'T00:00:00');
+          d.setDate(d.getDate() - 1);
+          expected = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        } else break;
+      }
+      if (streak > 0) {
+        streakWrap.style.display = '';
+        streakEl.textContent = streak + ' day streak';
+      } else {
+        streakWrap.style.display = 'none';
+      }
+    } else {
+      streakWrap.style.display = 'none';
+    }
+
+    // Chart — one dot per unique day (best time that day)
+    const chartWrap = document.getElementById('fkChartWrap');
+    const legendEl = document.getElementById('fkLegend');
+    const emptyEl = document.getElementById('fkEmpty');
+    const histEl = document.getElementById('fkHistory');
+
+    if (runs.length < 2) {
+      chartWrap.style.display = 'none';
+      legendEl.style.display = 'none';
+    } else {
+      chartWrap.style.display = '';
+      legendEl.style.display = '';
+
+      // Best per day
+      const byDay = {};
+      runs.forEach(r => {
+        if (!byDay[r.date] || r.secs < byDay[r.date]) byDay[r.date] = r.secs;
+      });
+      const days = Object.keys(byDay).sort();
+      const times = days.map(d => byDay[d]);
+
+      const minT = Math.min(...times);
+      const maxT = Math.max(...times);
+      const range = Math.max(maxT - minT, 30);
+      const today = fkTodayKey();
+
+      const W = 400, H = 80;
+      const pad = { l: 0, r: 8, t: 6, b: 16 };
+      const iW = W - pad.l - pad.r;
+      const iH = H - pad.t - pad.b;
+
+      const xScale = i => pad.l + (days.length > 1 ? (i / (days.length - 1)) * iW : iW / 2);
+      // Lower time = better = higher on chart
+      const yScale = t => pad.t + ((t - minT) / range) * iH;
+
+      let path = '';
+      let area = '';
+      const pts = days.map((d, i) => ({ x: xScale(i), y: yScale(byDay[d]) }));
+
+      if (pts.length === 1) {
+        path = `M${pts[0].x},${pts[0].y}`;
+        area = `M${pts[0].x},${H - pad.b} L${pts[0].x},${pts[0].y} Z`;
+      } else {
+        path = `M${pts[0].x},${pts[0].y}`;
+        area = `M${pts[0].x},${H - pad.b} L${pts[0].x},${pts[0].y}`;
+        for (let i = 1; i < pts.length; i++) {
+          const c1x = pts[i-1].x + (pts[i].x - pts[i-1].x) / 3;
+          const c2x = pts[i].x - (pts[i].x - pts[i-1].x) / 3;
+          path += ` C${c1x},${pts[i-1].y} ${c2x},${pts[i].y} ${pts[i].x},${pts[i].y}`;
+          area += ` C${c1x},${pts[i-1].y} ${c2x},${pts[i].y} ${pts[i].x},${pts[i].y}`;
+        }
+        area += ` L${pts[pts.length-1].x},${H - pad.b} Z`;
+      }
+
+      const yMax = fkFmt(maxT + 15);
+      const yMin = fkFmt(minT > 15 ? minT - 15 : 0);
+      document.getElementById('fkYAxis').innerHTML = `<span>${yMax}</span><span>${yMin}</span>`;
+
+      const gridLines = [0.25, 0.5, 0.75].map(f =>
+        `<line class="fk-grid-line" x1="0" y1="${(pad.t + f * iH).toFixed(1)}" x2="${W}" y2="${(pad.t + f * iH).toFixed(1)}"/>`
+      ).join('');
+
+      const dots = pts.map((p, i) => {
+        const isToday = days[i] === today;
+        const isPb = byDay[days[i]] === minT;
+        const r = isToday ? 5 : (isPb ? 5 : 3.5);
+        const cls = isToday ? 'fk-dot-today' : 'fk-dot';
+        return `<circle class="${cls}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}"/>`;
+      }).join('');
+
+      const xlabels = days.map((d, i) => {
+        const show = i === 0 || i === days.length - 1 || days.length <= 7;
+        if (!show) return '';
+        return `<text x="${pts[i].x.toFixed(1)}" y="${H}" font-size="9" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-family="monospace">${fkFmtDate(d).replace(' ','')}</text>`;
+      }).join('');
+
+      const svg = document.getElementById('fkChart');
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.innerHTML = `<defs><linearGradient id="fkFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6EE7B7" stop-opacity="0.25"/><stop offset="100%" stop-color="#6EE7B7" stop-opacity="0"/></linearGradient></defs>${gridLines}<path class="fk-area" d="${area}"/><path class="fk-line" d="${path}"/>${dots}${xlabels}`;
+    }
+
+    // History list
+    histEl.innerHTML = '';
+    if (runs.length === 0) {
+      emptyEl.style.display = '';
+    } else {
+      emptyEl.style.display = 'none';
+      const sorted = [...runs].sort((a, b) => b.ts - a.ts).slice(0, 30);
+      const minSecs = Math.min(...runs.map(r => r.secs));
+      const maxSecs = Math.max(...runs.map(r => r.secs));
+      const secsRange = Math.max(maxSecs - minSecs, 1);
+      sorted.forEach(r => {
+        const isPb = r.secs === minSecs;
+        // Bar: shorter time = wider bar (inverted)
+        const pct = Math.round(((maxSecs - r.secs) / secsRange) * 100);
+        const row = document.createElement('div');
+        row.className = 'fk-row';
+        row.innerHTML =
+          `<span class="fk-row-date">${fkFmtDate(r.date)}</span>` +
+          `<div class="fk-row-bar-track"><div class="fk-row-bar" style="width:${Math.max(pct,4)}%"></div></div>` +
+          `<span class="fk-row-time">${fkFmt(r.secs)}${isPb ? '<span class="fk-row-pb">PB</span>' : ''}</span>` +
+          `<button class="fk-row-del" data-ts="${r.ts}">×</button>`;
+        histEl.appendChild(row);
+      });
+    }
+  }
+
+  // Log a run
+  document.getElementById('fkLogBtn').addEventListener('click', () => {
+    const mins = parseInt(document.getElementById('fkMins').value) || 0;
+    const secs = parseInt(document.getElementById('fkSecs').value) || 0;
+    const total = mins * 60 + secs;
+    if (total < 60 || total > 7200) return; // sanity check
+    const data = fkLoad();
+    data.runs.push({ ts: Date.now(), date: fkTodayKey(), secs: total });
+    fkSave(data);
+    document.getElementById('fkMins').value = '';
+    document.getElementById('fkSecs').value = '';
+    fkRender();
+  });
+
+  // Enter key support
+  ['fkMins', 'fkSecs'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('fkLogBtn').click();
+    });
+  });
+
+  // Delete a run
+  document.getElementById('fkHistory').addEventListener('click', e => {
+    const btn = e.target.closest('[data-ts]');
+    if (!btn) return;
+    const ts = parseInt(btn.dataset.ts);
+    const data = fkLoad();
+    data.runs = data.runs.filter(r => r.ts !== ts);
+    fkSave(data);
+    fkRender();
+  });
+
+  fkRender();
 
   // ============================================================
   // CLOUD SYNC via Supabase  (OPTIONAL — leave blank for local-only)

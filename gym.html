@@ -3600,65 +3600,70 @@ img, video, canvas, svg { max-width: 100%; }
       });
       const days = Object.keys(byDay).sort();
       const times = days.map(d => byDay[d]);
-
       const minT = Math.min(...times);
       const maxT = Math.max(...times);
-      const range = Math.max(maxT - minT, 30);
+      // Minimum 3-minute visible range so two close times don't compress to a flat line
+      const pad_secs = 60;
+      const range = Math.max(maxT - minT, 180);
+      const yMin_secs = Math.max(0, minT - pad_secs);
+      const yMax_secs = yMin_secs + range + pad_secs;
       const today = fkTodayKey();
 
-      const W = 400, H = 80;
-      const pad = { l: 0, r: 8, t: 6, b: 16 };
+      const W = 400, H = 120;
+      const pad = { l: 38, r: 12, t: 10, b: 24 };
       const iW = W - pad.l - pad.r;
       const iH = H - pad.t - pad.b;
 
-      const xScale = i => pad.l + (days.length > 1 ? (i / (days.length - 1)) * iW : iW / 2);
-      // Lower time = better = higher on chart
-      const yScale = t => pad.t + ((t - minT) / range) * iH;
+      const n = days.length;
+      // Lower time = better = higher on chart (invert y)
+      const xOf = i => pad.l + (n > 1 ? (i / (n - 1)) * iW : iW / 2);
+      const yOf = t => pad.t + ((t - yMin_secs) / (yMax_secs - yMin_secs)) * iH;
 
-      let path = '';
-      let area = '';
-      const pts = days.map((d, i) => ({ x: xScale(i), y: yScale(byDay[d]) }));
+      const pts = days.map((d, i) => ({ x: xOf(i), y: yOf(byDay[d]) }));
 
-      if (pts.length === 1) {
-        path = `M${pts[0].x},${pts[0].y}`;
-        area = `M${pts[0].x},${H - pad.b} L${pts[0].x},${pts[0].y} Z`;
-      } else {
-        path = `M${pts[0].x},${pts[0].y}`;
-        area = `M${pts[0].x},${H - pad.b} L${pts[0].x},${pts[0].y}`;
-        for (let i = 1; i < pts.length; i++) {
-          const c1x = pts[i-1].x + (pts[i].x - pts[i-1].x) / 3;
-          const c2x = pts[i].x - (pts[i].x - pts[i-1].x) / 3;
-          path += ` C${c1x},${pts[i-1].y} ${c2x},${pts[i].y} ${pts[i].x},${pts[i].y}`;
-          area += ` C${c1x},${pts[i-1].y} ${c2x},${pts[i].y} ${pts[i].x},${pts[i].y}`;
-        }
-        area += ` L${pts[pts.length-1].x},${H - pad.b} Z`;
-      }
+      // Straight lines — no bezier (avoids blobs with few close points)
+      const linePath = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
 
-      const yMax = fkFmt(maxT + 15);
-      const yMin = fkFmt(minT > 15 ? minT - 15 : 0);
-      document.getElementById('fkYAxis').innerHTML = `<span>${yMax}</span><span>${yMin}</span>`;
+      // Y-axis labels (slower at top, faster at bottom — running convention)
+      const yLabels = [0, 0.5, 1].map(f => {
+        const t = yMin_secs + f * (yMax_secs - yMin_secs);
+        const y = pad.t + f * iH;
+        return `<text x="${(pad.l - 6).toFixed(0)}" y="${y.toFixed(1)}" font-size="9" text-anchor="end" dominant-baseline="middle" fill="rgba(255,255,255,0.3)" font-family="monospace">${fkFmt(Math.round(t))}</text>`;
+      }).join('');
 
-      const gridLines = [0.25, 0.5, 0.75].map(f =>
-        `<line class="fk-grid-line" x1="0" y1="${(pad.t + f * iH).toFixed(1)}" x2="${W}" y2="${(pad.t + f * iH).toFixed(1)}"/>`
+      // Grid lines
+      const gridLines = [0, 0.5, 1].map(f =>
+        `<line stroke="rgba(255,255,255,0.06)" stroke-width="1" x1="${pad.l}" y1="${(pad.t + f * iH).toFixed(1)}" x2="${W - pad.r}" y2="${(pad.t + f * iH).toFixed(1)}"/>`
       ).join('');
 
+      // Dots + time labels above each dot
       const dots = pts.map((p, i) => {
         const isToday = days[i] === today;
         const isPb = byDay[days[i]] === minT;
-        const r = isToday ? 5 : (isPb ? 5 : 3.5);
-        const cls = isToday ? 'fk-dot-today' : 'fk-dot';
-        return `<circle class="${cls}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}"/>`;
+        const r = 4;
+        const fill = isPb ? '#fff' : '#6EE7B7';
+        const stroke = isPb ? '#6EE7B7' : 'var(--bg-card)';
+        const showLabel = n <= 10 || isPb || isToday;
+        const label = showLabel
+          ? `<text x="${p.x.toFixed(1)}" y="${(p.y - 8).toFixed(1)}" font-size="9" text-anchor="middle" fill="${isPb ? '#6EE7B7' : 'rgba(255,255,255,0.45)'}" font-family="monospace">${fkFmt(byDay[days[i]])}</text>`
+          : '';
+        return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>${label}`;
       }).join('');
 
+      // X-axis date labels
       const xlabels = days.map((d, i) => {
-        const show = i === 0 || i === days.length - 1 || days.length <= 7;
+        const show = n <= 7 || i === 0 || i === n - 1 || i % Math.ceil(n / 5) === 0;
         if (!show) return '';
-        return `<text x="${pts[i].x.toFixed(1)}" y="${H}" font-size="9" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-family="monospace">${fkFmtDate(d).replace(' ','')}</text>`;
+        return `<text x="${pts[i].x.toFixed(1)}" y="${(H - 4).toFixed(1)}" font-size="9" text-anchor="middle" fill="rgba(255,255,255,0.28)" font-family="monospace">${fkFmtDate(d)}</text>`;
       }).join('');
 
       const svg = document.getElementById('fkChart');
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-      svg.innerHTML = `<defs><linearGradient id="fkFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6EE7B7" stop-opacity="0.25"/><stop offset="100%" stop-color="#6EE7B7" stop-opacity="0"/></linearGradient></defs>${gridLines}<path class="fk-area" d="${area}"/><path class="fk-line" d="${path}"/>${dots}${xlabels}`;
+      svg.innerHTML = gridLines + yLabels +
+        `<path d="${linePath}" fill="none" stroke="#6EE7B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` +
+        dots + xlabels;
+
+      document.getElementById('fkYAxis').innerHTML = '';
     }
 
     // History list

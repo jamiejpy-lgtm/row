@@ -3586,19 +3586,20 @@ img, video, canvas, svg { max-width: 100%; }
     const emptyEl = document.getElementById('fkEmpty');
     const histEl = document.getElementById('fkHistory');
 
-    if (runs.length < 2) {
+    // Best per day — needed for both chart and empty-state check
+    const byDay = {};
+    runs.forEach(r => {
+      if (!byDay[r.date] || r.secs < byDay[r.date]) byDay[r.date] = r.secs;
+    });
+    const days = Object.keys(byDay).sort();
+
+    if (days.length < 2) {
       chartWrap.style.display = 'none';
       legendEl.style.display = 'none';
     } else {
       chartWrap.style.display = '';
       legendEl.style.display = '';
 
-      // Best per day
-      const byDay = {};
-      runs.forEach(r => {
-        if (!byDay[r.date] || r.secs < byDay[r.date]) byDay[r.date] = r.secs;
-      });
-      const days = Object.keys(byDay).sort();
       const times = days.map(d => byDay[d]);
       const minT = Math.min(...times);
       const maxT = Math.max(...times);

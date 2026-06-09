@@ -3603,6 +3603,9 @@ img, video, canvas, svg { max-width: 100%; }
       chartWrap.style.display = '';
       legendEl.style.display = '';
 
+      const times = days.map(d => byDay[d]);
+      const minT = Math.min(...times);
+      const maxT = Math.max(...times);
       const yMin_secs = 20 * 60; // 20:00 — bottom of chart (fastest)
       const yMax_secs = 30 * 60; // 30:00 — top of chart (slowest)
       const today = fkTodayKey();

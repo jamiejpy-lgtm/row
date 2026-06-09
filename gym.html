@@ -3603,14 +3603,8 @@ img, video, canvas, svg { max-width: 100%; }
       chartWrap.style.display = '';
       legendEl.style.display = '';
 
-      const times = days.map(d => byDay[d]);
-      const minT = Math.min(...times);
-      const maxT = Math.max(...times);
-      // Minimum 3-minute visible range so two close times don't compress to a flat line
-      const pad_secs = 60;
-      const range = Math.max(maxT - minT, 180);
-      const yMin_secs = Math.max(0, minT - pad_secs);
-      const yMax_secs = yMin_secs + range + pad_secs;
+      const yMin_secs = 20 * 60; // 20:00 — bottom of chart (fastest)
+      const yMax_secs = 30 * 60; // 30:00 — top of chart (slowest)
       const today = fkTodayKey();
 
       const W = 400, H = 120;

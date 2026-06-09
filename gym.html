@@ -3001,12 +3001,15 @@ img, video, canvas, svg { max-width: 100%; }
         totalVolumeInWindow += (l.weight || 0) * (l.reps || 0);
       });
       if (!inWin.length) return;
-      const avg = arr => arr.reduce((s, l) => s + estimate1RM(l.weight, l.reps), 0) / arr.length;
+      // If weight is 0 or unlogged, fall back to reps as the strength metric
+      const allLogs = [...(before || []), ...inWin];
+      const hasWeight = allLogs.some(l => (l.weight || 0) > 0);
+      const metric = l => hasWeight ? estimate1RM(l.weight || 0, l.reps) : (l.reps || 0);
+      const avg = arr => arr.reduce((s, l) => s + metric(l), 0) / arr.length;
       let a, b;
       if (before.length) {
         a = avg(before); b = avg(inWin);
       } else if (inWin.length >= 2) {
-        // No pre-window logs — compare first half vs second half of what we have
         const mid = Math.floor(inWin.length / 2);
         a = avg(inWin.slice(0, mid)); b = avg(inWin.slice(mid));
       } else { return; }

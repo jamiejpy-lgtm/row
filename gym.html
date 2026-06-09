@@ -3627,7 +3627,7 @@ img, video, canvas, svg { max-width: 100%; }
 
       // Y-axis labels (slower at top, faster at bottom — running convention)
       const yLabels = [0, 0.5, 1].map(f => {
-        const t = yMin_secs + f * (yMax_secs - yMin_secs);
+        const t = yMax_secs - f * (yMax_secs - yMin_secs);
         const y = pad.t + f * iH;
         return `<text x="${(pad.l - 6).toFixed(0)}" y="${y.toFixed(1)}" font-size="9" text-anchor="end" dominant-baseline="middle" fill="rgba(255,255,255,0.3)" font-family="monospace">${fkFmt(Math.round(t))}</text>`;
       }).join('');

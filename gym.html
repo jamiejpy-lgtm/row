@@ -3621,7 +3621,7 @@ img, video, canvas, svg { max-width: 100%; }
       const n = days.length;
       // Lower time = better = higher on chart (invert y)
       const xOf = i => pad.l + (n > 1 ? (i / (n - 1)) * iW : iW / 2);
-      const yOf = t => pad.t + ((t - yMin_secs) / (yMax_secs - yMin_secs)) * iH;
+      const yOf = t => pad.t + ((yMax_secs - t) / (yMax_secs - yMin_secs)) * iH;
 
       const pts = days.map((d, i) => ({ x: xOf(i), y: yOf(byDay[d]) }));
 

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050506">
+<title>Nutrition — Jamie</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync.js" defer></script>
+<script src="topbar.js" defer></script>
+<style>
+:root {
+  --text-primary: #FAFAFA;
+  --text-secondary: #B8B6B0;
+  --text-tertiary: #76746E;
+  --success: #6BE3A4;
+  --warning: #F2C063;
+  --danger: #FF6B6B;
+  --protein: #60A5FA;
+  --carbs: #FBBF24;
+  --fat: #F87171;
+  --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: #050506;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 20px 20px 60px;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(circle at 75% 10%, rgba(96, 165, 250, 0.10), transparent 45%),
+    radial-gradient(circle at 20% 85%, rgba(251, 191, 36, 0.07), transparent 50%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: -2;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.014) 1px, transparent 1px);
+  background-size: 3px 3px;
+  pointer-events: none;
+  z-index: -1;
+}
+.page { max-width: 680px; margin: 0 auto; }
+
+.page-title {
+  margin: 0 0 18px;
+  font-size: 26px; font-weight: 700;
+  letter-spacing: -0.025em;
+  background: linear-gradient(180deg, #FFFFFF 0%, #C7C4BC 120%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+
+.section-title {
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  display: flex; align-items: center; gap: 12px;
+  margin: 22px 0 12px;
+}
+.section-title::before {
+  content: ''; width: 18px; height: 1px;
+  background: var(--text-tertiary); opacity: 0.6;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent);
+}
+
+.card {
+  background: rgba(255,255,255,0.04);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 14px;
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+}
+
+/* ===== Today summary ===== */
+.today-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+  margin-bottom: 16px;
+}
+.cal-big {
+  display: flex; align-items: baseline; gap: 6px;
+}
+.cal-num {
+  font-size: 52px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  color: var(--text-primary); line-height: 1;
+}
+.cal-goal {
+  font-family: var(--font-mono);
+  font-size: 18px; color: var(--text-tertiary);
+}
+.cal-label {
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.cal-remaining {
+  text-align: right;
+}
+.cal-remaining-num {
+  font-family: var(--font-mono);
+  font-size: 22px; font-weight: 700;
+  color: var(--success);
+  font-variant-numeric: tabular-nums;
+}
+.cal-remaining-num.over { color: var(--danger); }
+.cal-remaining-label {
+  font-size: 10px; color: var(--text-tertiary);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+/* calorie progress bar */
+.cal-bar-track {
+  height: 8px; border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden; margin-bottom: 18px;
+}
+.cal-bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, #6BE3A4, #60A5FA);
+  transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
+}
+.cal-bar-fill.over { background: linear-gradient(90deg, #FBBF24, #F87171); }
+
+/* macro bars */
+.macro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.macro-item {}
+.macro-label {
+  font-family: var(--font-mono);
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+.macro-val {
+  font-size: 22px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary); line-height: 1;
+  margin-bottom: 4px;
+}
+.macro-sub {
+  font-family: var(--font-mono);
+  font-size: 10px; color: var(--text-tertiary);
+}
+.macro-bar-track {
+  height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden; margin-top: 5px;
+}
+.macro-bar-fill {
+  height: 100%; border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
+}
+.macro-bar-fill.protein { background: var(--protein); }
+.macro-bar-fill.carbs   { background: var(--carbs); }
+.macro-bar-fill.fat     { background: var(--fat); }
+
+/* ===== Add food form ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px;
+}
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+.form-label {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.form-input {
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.28);
+  color: var(--text-primary);
+  font-family: inherit; font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  -webkit-appearance: none;
+}
+.form-input::placeholder { color: var(--text-tertiary); }
+.form-input:focus { border-color: rgba(255,255,255,0.28); background: rgba(0,0,0,0.36); }
+.form-input[type=number] { font-family: var(--font-mono); }
+
+.form-actions {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.btn-add {
+  flex: 1;
+  padding: 11px 20px;
+  border: 0; border-radius: 12px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #E8E5DD 100%);
+  color: #0A0A0B;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.35);
+  transition: transform 0.1s, filter 0.15s;
+}
+.btn-add:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.btn-add:active { transform: translateY(0); }
+
+/* ===== 7-day chart ===== */
+.chart-wrap { overflow: hidden; }
+.chart-svg { display: block; width: 100%; }
+
+/* ===== Food log ===== */
+.log-list { list-style: none; margin: 0; padding: 0; }
+.log-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+}
+.log-name {
+  flex: 1;
+  font-size: 14px; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.log-macros {
+  display: flex; gap: 6px; align-items: center; flex-shrink: 0;
+}
+.log-cal {
+  font-family: var(--font-mono);
+  font-size: 12px; font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  background: rgba(255,255,255,0.05);
+  padding: 2px 8px; border-radius: 6px;
+}
+.log-macro-tag {
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 6px; border-radius: 5px;
+}
+.log-macro-tag.p { background: rgba(96,165,250,0.12); color: var(--protein); }
+.log-macro-tag.c { background: rgba(251,191,36,0.12); color: var(--carbs); }
+.log-macro-tag.f { background: rgba(248,113,113,0.12); color: var(--fat); }
+.log-time {
+  font-family: var(--font-mono);
+  font-size: 10px; color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+.log-del {
+  border: 0; background: transparent;
+  color: var(--text-tertiary); font-size: 18px;
+  cursor: pointer; padding: 0 4px;
+  opacity: 0.4; flex-shrink: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+.log-item:hover .log-del { opacity: 1; }
+.log-del:hover { color: var(--danger); }
+
+.empty-state {
+  text-align: center;
+  font-size: 12px; font-style: italic;
+  color: var(--text-tertiary); padding: 16px 0;
+}
+
+/* ===== Goal settings ===== */
+.goal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px;
+}
+.btn-save {
+  padding: 10px 20px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 8px;
+}
+.btn-save:hover { background: rgba(255,255,255,0.09); }
+
+@media (max-width: 540px) {
+  body { padding: 14px 14px 50px; }
+  .cal-num { font-size: 40px; }
+  .form-row { grid-template-columns: 1fr 1fr; }
+  .goal-row { grid-template-columns: 1fr 1fr; }
+  .macro-grid { gap: 6px; }
+  .macro-val { font-size: 18px; }
+}
+@media (max-width: 360px) {
+  .log-macro-tag { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="page-title">Nutrition</h1>
+
+  <!-- Today summary -->
+  <div class="section-title">Today</div>
+  <div class="card">
+    <div class="today-header">
+      <div>
+        <div class="cal-label">Calories consumed</div>
+        <div class="cal-big">
+          <span class="cal-num" id="calToday">0</span>
+          <span class="cal-goal" id="calGoalDisplay">/ 0</span>
+        </div>
+      </div>
+      <div class="cal-remaining">
+        <div class="cal-remaining-num" id="calRemaining">0</div>
+        <div class="cal-remaining-label" id="calRemainingLabel">remaining</div>
+      </div>
+    </div>
+    <div class="cal-bar-track">
+      <div class="cal-bar-fill" id="calBar" style="width:0%"></div>
+    </div>
+    <div class="macro-grid">
+      <div class="macro-item">
+        <div class="macro-label">Protein</div>
+        <div class="macro-val" id="macroProteinVal">0<span style="font-size:14px;color:var(--text-tertiary)">g</span></div>
+        <div class="macro-sub" id="macroProteinSub">/ 0g goal</div>
+        <div class="macro-bar-track"><div class="macro-bar-fill protein" id="macroProteinBar" style="width:0%"></div></div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-label">Carbs</div>
+        <div class="macro-val" id="macroCarbsVal">0<span style="font-size:14px;color:var(--text-tertiary)">g</span></div>
+        <div class="macro-sub" id="macroCarbsSub">/ 0g goal</div>
+        <div class="macro-bar-track"><div class="macro-bar-fill carbs" id="macroCarbsBar" style="width:0%"></div></div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-label">Fat</div>
+        <div class="macro-val" id="macroFatVal">0<span style="font-size:14px;color:var(--text-tertiary)">g</span></div>
+        <div class="macro-sub" id="macroFatSub">/ 0g goal</div>
+        <div class="macro-bar-track"><div class="macro-bar-fill fat" id="macroFatBar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add food -->
+  <div class="section-title">Log Food</div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="form-label" for="foodName">Food name</label>
+        <input class="form-input" id="foodName" type="text" placeholder="e.g. Chicken breast" autocomplete="off">
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="foodCal">Calories</label>
+          <input class="form-input" id="foodCal" type="number" min="0" placeholder="450">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="foodProtein">Protein (g)</label>
+          <input class="form-input" id="foodProtein" type="number" min="0" placeholder="40">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="foodCarbs">Carbs (g)</label>
+          <input class="form-input" id="foodCarbs" type="number" min="0" placeholder="30">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="foodFat">Fat (g)</label>
+          <input class="form-input" id="foodFat" type="number" min="0" placeholder="10">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-add" id="addFoodBtn" type="button">+ Log food</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's log -->
+  <div class="section-title">Today's Log</div>
+  <div class="card" style="padding:14px;">
+    <ul class="log-list" id="todayLog"></ul>
+    <div class="empty-state" id="todayEmpty" style="display:none;">No food logged today — add your first meal above.</div>
+  </div>
+
+  <!-- 7-day chart -->
+  <div class="section-title">7-Day Calories</div>
+  <div class="card">
+    <div class="chart-wrap">
+      <svg class="chart-svg" id="calChart" viewBox="0 0 600 140" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </div>
+
+  <!-- Goals -->
+  <div class="section-title">Daily Goals</div>
+  <div class="card">
+    <div class="goal-row">
+      <div class="form-field">
+        <label class="form-label" for="goalCalInput">Calories</label>
+        <input class="form-input" id="goalCalInput" type="number" min="0" placeholder="4000">
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="goalProteinInput">Protein (g)</label>
+        <input class="form-input" id="goalProteinInput" type="number" min="0" placeholder="200">
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="goalCarbsInput">Carbs (g)</label>
+        <input class="form-input" id="goalCarbsInput" type="number" min="0" placeholder="400">
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="goalFatInput">Fat (g)</label>
+        <input class="form-input" id="goalFatInput" type="number" min="0" placeholder="100">
+      </div>
+    </div>
+    <button class="btn-save" id="saveGoalsBtn" type="button">Save goals</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const STORE_KEY = 'nutrition_v1';
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function todayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function save(data) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function getGoals(data) {
+    return Object.assign({ calories: 0, protein: 0, carbs: 0, fat: 0 }, data.goals || {});
+  }
+  function getTodayEntries(data) {
+    const logs = data.logs || {};
+    return Array.isArray(logs[todayKey()]) ? logs[todayKey()] : [];
+  }
+
+  function sumEntries(entries) {
+    return entries.reduce((a, e) => ({
+      calories: a.calories + (e.calories || 0),
+      protein:  a.protein  + (e.protein  || 0),
+      carbs:    a.carbs    + (e.carbs    || 0),
+      fat:      a.fat      + (e.fat      || 0),
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  }
+
+  function clamp01(v) { return Math.min(1, Math.max(0, v)); }
+
+  function renderToday() {
+    const data = load();
+    const goals = getGoals(data);
+    const entries = getTodayEntries(data);
+    const totals = sumEntries(entries);
+
+    const calGoal = goals.calories || 0;
+    const remaining = calGoal - totals.calories;
+    const pct = calGoal > 0 ? clamp01(totals.calories / calGoal) * 100 : 0;
+    const over = totals.calories > calGoal && calGoal > 0;
+
+    document.getElementById('calToday').textContent = Math.round(totals.calories);
+    document.getElementById('calGoalDisplay').textContent = '/ ' + Math.round(calGoal);
+
+    const remEl = document.getElementById('calRemaining');
+    const remLabelEl = document.getElementById('calRemainingLabel');
+    remEl.textContent = Math.abs(Math.round(remaining));
+    remEl.className = 'cal-remaining-num' + (over ? ' over' : '');
+    remLabelEl.textContent = over ? 'over goal' : 'remaining';
+
+    const barEl = document.getElementById('calBar');
+    barEl.style.width = Math.min(100, pct) + '%';
+    barEl.className = 'cal-bar-fill' + (over ? ' over' : '');
+
+    const macros = [
+      { key: 'protein', valId: 'macroProteinVal', subId: 'macroProteinSub', barId: 'macroProteinBar' },
+      { key: 'carbs',   valId: 'macroCarbsVal',   subId: 'macroCarbsSub',   barId: 'macroCarbsBar' },
+      { key: 'fat',     valId: 'macroFatVal',      subId: 'macroFatSub',     barId: 'macroFatBar' },
+    ];
+    macros.forEach(m => {
+      const val = Math.round(totals[m.key]);
+      const goal = goals[m.key] || 0;
+      const p = goal > 0 ? clamp01(val / goal) * 100 : 0;
+      document.getElementById(m.valId).innerHTML =
+        val + '<span style="font-size:14px;color:var(--text-tertiary)">g</span>';
+      document.getElementById(m.subId).textContent = '/ ' + Math.round(goal) + 'g goal';
+      document.getElementById(m.barId).style.width = p + '%';
+    });
+
+    renderLog(entries);
+    renderChart();
+  }
+
+  function timeLabel() {
+    const d = new Date();
+    let h = d.getHours(), m = d.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + pad2(m) + ' ' + ampm;
+  }
+
+  function renderLog(entries) {
+    const ul = document.getElementById('todayLog');
+    const empty = document.getElementById('todayEmpty');
+    ul.innerHTML = '';
+    if (entries.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    // show newest first
+    [...entries].reverse().forEach((e, ri) => {
+      const idx = entries.length - 1 - ri;
+      const li = document.createElement('li');
+      li.className = 'log-item';
+      li.innerHTML = `
+        <span class="log-name">${e.name || 'Unknown'}</span>
+        <span class="log-macros">
+          <span class="log-cal">${Math.round(e.calories || 0)} kcal</span>
+          ${e.protein ? `<span class="log-macro-tag p">${Math.round(e.protein)}p</span>` : ''}
+          ${e.carbs   ? `<span class="log-macro-tag c">${Math.round(e.carbs)}c</span>` : ''}
+          ${e.fat     ? `<span class="log-macro-tag f">${Math.round(e.fat)}f</span>` : ''}
+        </span>
+        <span class="log-time">${e.time || ''}</span>
+        <button class="log-del" data-idx="${idx}" type="button" aria-label="Delete">×</button>
+      `;
+      li.querySelector('.log-del').addEventListener('click', () => {
+        const d = load();
+        const tk = todayKey();
+        if (!d.logs) d.logs = {};
+        if (!Array.isArray(d.logs[tk])) d.logs[tk] = [];
+        d.logs[tk].splice(idx, 1);
+        save(d);
+        renderToday();
+      });
+      ul.appendChild(li);
+    });
+  }
+
+  function renderChart() {
+    const svg = document.getElementById('calChart');
+    svg.innerHTML = '';
+    const data = load();
+    const goals = getGoals(data);
+    const calGoal = goals.calories || 0;
+    const logs = data.logs || {};
+
+    // Build last 7 days
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const k = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+      const entries = Array.isArray(logs[k]) ? logs[k] : [];
+      const cal = Math.round(entries.reduce((a, e) => a + (e.calories || 0), 0));
+      const label = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+      days.push({ k, cal, label });
+    }
+
+    const W = 600, H = 140;
+    const pad = { t: 12, b: 30, l: 6, r: 6 };
+    const iW = W - pad.l - pad.r;
+    const iH = H - pad.t - pad.b;
+    const n = days.length;
+    const colW = iW / n;
+
+    const maxCal = Math.max(calGoal * 1.2, ...days.map(d => d.cal), 500);
+
+    const yOf = v => pad.t + iH - (v / maxCal) * iH;
+
+    // Goal line
+    if (calGoal > 0) {
+      const gy = yOf(calGoal);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', pad.l); line.setAttribute('x2', W - pad.r);
+      line.setAttribute('y1', gy);    line.setAttribute('y2', gy);
+      line.setAttribute('stroke', 'rgba(107,227,164,0.28)');
+      line.setAttribute('stroke-width', '1.5');
+      line.setAttribute('stroke-dasharray', '4 4');
+      svg.appendChild(line);
+    }
+
+    const today = todayKey();
+    days.forEach((day, i) => {
+      const x = pad.l + i * colW;
+      const barW = colW * 0.55;
+      const barX = x + (colW - barW) / 2;
+      const barH = day.cal > 0 ? Math.max(3, (day.cal / maxCal) * iH) : 0;
+      const barY = pad.t + iH - barH;
+      const isToday = day.k === today;
+      const isOver = calGoal > 0 && day.cal > calGoal;
+
+      if (day.cal > 0) {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', barX);
+        rect.setAttribute('y', barY);
+        rect.setAttribute('width', barW);
+        rect.setAttribute('height', barH);
+        rect.setAttribute('rx', '4');
+        rect.setAttribute('fill', isOver ? 'rgba(248,113,113,0.65)' : isToday ? 'rgba(107,227,164,0.75)' : 'rgba(96,165,250,0.40)');
+        svg.appendChild(rect);
+
+        // calorie label on bar
+        const calTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        calTxt.setAttribute('x', barX + barW / 2);
+        calTxt.setAttribute('y', barY - 4);
+        calTxt.setAttribute('text-anchor', 'middle');
+        calTxt.setAttribute('font-size', '9');
+        calTxt.setAttribute('font-family', 'ui-monospace, monospace');
+        calTxt.setAttribute('fill', isOver ? '#F87171' : isToday ? '#6BE3A4' : 'rgba(255,255,255,0.45)');
+        calTxt.textContent = day.cal >= 1000 ? (day.cal / 1000).toFixed(1) + 'k' : day.cal;
+        svg.appendChild(calTxt);
+      }
+
+      // Day label
+      const dayTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      dayTxt.setAttribute('x', x + colW / 2);
+      dayTxt.setAttribute('y', H - pad.b + 14);
+      dayTxt.setAttribute('text-anchor', 'middle');
+      dayTxt.setAttribute('font-size', '10');
+      dayTxt.setAttribute('font-weight', isToday ? '700' : '400');
+      dayTxt.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+      dayTxt.setAttribute('fill', isToday ? '#FAFAFA' : 'rgba(255,255,255,0.35)');
+      dayTxt.textContent = day.label;
+      svg.appendChild(dayTxt);
+    });
+  }
+
+  // ===== Add food =====
+  document.getElementById('addFoodBtn').addEventListener('click', () => {
+    const name = document.getElementById('foodName').value.trim();
+    const cal  = parseFloat(document.getElementById('foodCal').value)     || 0;
+    const prot = parseFloat(document.getElementById('foodProtein').value) || 0;
+    const carb = parseFloat(document.getElementById('foodCarbs').value)   || 0;
+    const fat  = parseFloat(document.getElementById('foodFat').value)     || 0;
+    if (!name && cal === 0) return;
+
+    const d = load();
+    if (!d.logs) d.logs = {};
+    const tk = todayKey();
+    if (!Array.isArray(d.logs[tk])) d.logs[tk] = [];
+    d.logs[tk].push({ id: uid(), name: name || 'Food', calories: cal, protein: prot, carbs: carb, fat, time: timeLabel() });
+    save(d);
+
+    document.getElementById('foodName').value    = '';
+    document.getElementById('foodCal').value     = '';
+    document.getElementById('foodProtein').value = '';
+    document.getElementById('foodCarbs').value   = '';
+    document.getElementById('foodFat').value     = '';
+    document.getElementById('foodName').focus();
+
+    renderToday();
+  });
+
+  // Enter key on any form field
+  ['foodName','foodCal','foodProtein','foodCarbs','foodFat'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('addFoodBtn').click(); }
+    });
+  });
+
+  // ===== Goals =====
+  function loadGoalInputs() {
+    const data = load();
+    const g = getGoals(data);
+    document.getElementById('goalCalInput').value     = g.calories || '';
+    document.getElementById('goalProteinInput').value = g.protein  || '';
+    document.getElementById('goalCarbsInput').value   = g.carbs    || '';
+    document.getElementById('goalFatInput').value     = g.fat      || '';
+  }
+
+  document.getElementById('saveGoalsBtn').addEventListener('click', () => {
+    const d = load();
+    d.goals = {
+      calories: parseFloat(document.getElementById('goalCalInput').value)     || 0,
+      protein:  parseFloat(document.getElementById('goalProteinInput').value) || 0,
+      carbs:    parseFloat(document.getElementById('goalCarbsInput').value)   || 0,
+      fat:      parseFloat(document.getElementById('goalFatInput').value)     || 0,
+    };
+    save(d);
+    renderToday();
+    const btn = document.getElementById('saveGoalsBtn');
+    btn.textContent = 'Saved ✓';
+    setTimeout(() => { btn.textContent = 'Save goals'; }, 1500);
+  });
+
+  // ===== Boot =====
+  loadGoalInputs();
+  renderToday();
+
+  window.addEventListener('storage', e => {
+    if (e.key === STORE_KEY) { loadGoalInputs(); renderToday(); }
+  });
+})();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof initCloudSync !== 'function') return;
+  initCloudSync({
+    appKey: 'nutrition',
+    syncedKeys: ['nutrition_v1'],
+    onApplied: function () {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'nutrition_v1' }));
+    }
+  });
+});
+</script>
+</body>
+</html>

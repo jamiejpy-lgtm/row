@@ -205,6 +205,11 @@ body.topbar-modal-open {
     <span class="topbar-pill-label">RECOVERY</span>
     <span class="topbar-pill-count" id="topbarRecoveryCount">—</span>
   </a>
+  <a href="nutrition.html" class="topbar-pill" id="topbarNutrition">
+    <span class="topbar-pill-dot" style="background:#FBBF24;"></span>
+    <span class="topbar-pill-label">KCAL</span>
+    <span class="topbar-pill-count" id="topbarNutritionCount">—</span>
+  </a>
 </header>
 `;
 
@@ -284,6 +289,17 @@ body.topbar-modal-open {
     return { done, total };
   }
 
+  function getNutritionCals() {
+    try {
+      const d = JSON.parse(localStorage.getItem('nutrition_v1')) || {};
+      const today = calendarDateKey();
+      const entries = (d.logs || {})[today] || [];
+      const total = entries.reduce((a, e) => a + (e.calories || 0), 0);
+      const goal = (d.goals || {}).calories || 0;
+      return { total: Math.round(total), goal: Math.round(goal) };
+    } catch (e) { return { total: 0, goal: 0 }; }
+  }
+
   function getRecoveryDays() {
     try {
       const d = JSON.parse(localStorage.getItem('addiction_v1'));
@@ -342,6 +358,17 @@ body.topbar-modal-open {
         const s = (sd.logs || {})[tk] || 0;
         stepsCount.textContent = s > 0 ? (s >= 1000 ? (s/1000).toFixed(1).replace(/\.0$/,'') + 'k' : s) : '—';
       } catch (e) { stepsCount.textContent = '—'; }
+    }
+
+    const nutCount = document.getElementById('topbarNutritionCount');
+    if (nutCount) {
+      const nc = getNutritionCals();
+      if (nc.total > 0) {
+        const disp = nc.total >= 1000 ? (nc.total / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : nc.total;
+        nutCount.textContent = disp;
+      } else {
+        nutCount.textContent = '—';
+      }
     }
   }
 

@@ -309,6 +309,50 @@ body::after {
 }
 .btn-save:hover { background: rgba(255,255,255,0.09); }
 
+/* ===== Food search ===== */
+.search-row {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+  align-items: end;
+}
+.food-search-wrap { position: relative; }
+.food-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 200;
+  background: #141416;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  max-height: 230px; overflow-y: auto;
+  display: none;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.65);
+}
+.food-dropdown.open { display: block; }
+.food-option {
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 13px; color: var(--text-primary);
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.1s;
+}
+.food-option:last-child { border-bottom: none; }
+.food-option:hover, .food-option.active { background: rgba(255,255,255,0.07); }
+.food-option-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.food-option-meta {
+  font-family: var(--font-mono);
+  font-size: 10px; color: var(--text-tertiary);
+  white-space: nowrap; flex-shrink: 0;
+}
+.db-hint {
+  font-size: 10.5px; color: var(--text-tertiary);
+  margin: 6px 0 12px; padding-left: 2px;
+}
+.db-hint.selected { color: #FBBF24; }
+.form-divider {
+  height: 1px; background: rgba(255,255,255,0.06);
+  margin: 12px 0;
+}
+
 @media (max-width: 540px) {
   body { padding: 14px 14px 50px; }
   .cal-num { font-size: 40px; }
@@ -371,6 +415,21 @@ body::after {
   <div class="section-title">Log Food</div>
   <div class="card">
     <div class="form-grid">
+      <div>
+        <div class="search-row">
+          <div class="form-field food-search-wrap">
+            <label class="form-label" for="foodSearch">Search food database</label>
+            <input class="form-input" id="foodSearch" type="text" placeholder="e.g. eggs, chicken, oats…" autocomplete="off">
+            <div class="food-dropdown" id="foodDropdown"></div>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="foodGrams">Grams</label>
+            <input class="form-input" id="foodGrams" type="number" min="0" placeholder="100">
+          </div>
+        </div>
+        <div class="db-hint" id="dbHint">Search above to auto-fill macros, or enter manually below.</div>
+      </div>
+      <div class="form-divider"></div>
       <div class="form-field">
         <label class="form-label" for="foodName">Food name</label>
         <input class="form-input" id="foodName" type="text" placeholder="e.g. Chicken breast" autocomplete="off">
@@ -653,6 +712,147 @@ body::after {
     });
   }
 
+  // ===== Food database =====
+  const FOODS = [
+    { n: 'Egg (whole)',             cal: 155, p: 13.0, c: 1.1,  f: 11.0 },
+    { n: 'Egg white',               cal: 52,  p: 11.0, c: 0.7,  f: 0.2  },
+    { n: 'Egg yolk',                cal: 322, p: 15.9, c: 3.6,  f: 26.5 },
+    { n: 'Chicken breast (cooked)', cal: 165, p: 31.0, c: 0.0,  f: 3.6  },
+    { n: 'Chicken thigh (cooked)',  cal: 209, p: 26.0, c: 0.0,  f: 11.0 },
+    { n: 'Turkey breast (cooked)',  cal: 135, p: 30.0, c: 0.0,  f: 1.0  },
+    { n: 'Beef mince (lean)',       cal: 215, p: 26.0, c: 0.0,  f: 12.0 },
+    { n: 'Steak (lean, cooked)',    cal: 250, p: 30.0, c: 0.0,  f: 14.0 },
+    { n: 'Bacon (grilled)',         cal: 541, p: 37.0, c: 1.4,  f: 42.0 },
+    { n: 'Pork sausage',            cal: 301, p: 15.0, c: 5.0,  f: 25.0 },
+    { n: 'Salmon (cooked)',         cal: 206, p: 28.0, c: 0.0,  f: 10.0 },
+    { n: 'Tuna (canned in water)',  cal: 116, p: 25.0, c: 0.0,  f: 1.0  },
+    { n: 'White fish / Cod',        cal: 105, p: 23.0, c: 0.0,  f: 0.9  },
+    { n: 'Prawns / Shrimp',         cal: 99,  p: 24.0, c: 0.0,  f: 0.3  },
+    { n: 'White rice (cooked)',     cal: 130, p: 2.7,  c: 28.0, f: 0.3  },
+    { n: 'Brown rice (cooked)',     cal: 123, p: 2.6,  c: 26.0, f: 1.0  },
+    { n: 'Pasta (cooked)',          cal: 131, p: 5.0,  c: 25.0, f: 1.1  },
+    { n: 'Oats (dry)',              cal: 389, p: 17.0, c: 66.0, f: 7.0  },
+    { n: 'White bread',             cal: 265, p: 9.0,  c: 51.0, f: 3.2  },
+    { n: 'Wholemeal bread',         cal: 247, p: 11.0, c: 44.0, f: 3.4  },
+    { n: 'Potato (boiled)',         cal: 87,  p: 1.9,  c: 20.0, f: 0.1  },
+    { n: 'Sweet potato (cooked)',   cal: 86,  p: 1.6,  c: 20.0, f: 0.1  },
+    { n: 'Milk (whole)',            cal: 61,  p: 3.2,  c: 4.8,  f: 3.3  },
+    { n: 'Milk (skimmed)',          cal: 35,  p: 3.4,  c: 5.0,  f: 0.1  },
+    { n: 'Greek yogurt (full fat)', cal: 97,  p: 9.0,  c: 4.0,  f: 5.0  },
+    { n: 'Greek yogurt (0%)',       cal: 59,  p: 10.0, c: 3.6,  f: 0.4  },
+    { n: 'Cottage cheese',          cal: 98,  p: 11.0, c: 3.4,  f: 4.3  },
+    { n: 'Cheddar cheese',          cal: 403, p: 25.0, c: 1.3,  f: 33.0 },
+    { n: 'Whey protein powder',     cal: 400, p: 80.0, c: 10.0, f: 5.0  },
+    { n: 'Peanut butter',           cal: 588, p: 25.0, c: 20.0, f: 50.0 },
+    { n: 'Almonds',                 cal: 579, p: 21.0, c: 22.0, f: 50.0 },
+    { n: 'Mixed nuts',              cal: 607, p: 16.0, c: 21.0, f: 54.0 },
+    { n: 'Avocado',                 cal: 160, p: 2.0,  c: 9.0,  f: 15.0 },
+    { n: 'Olive oil',               cal: 884, p: 0.0,  c: 0.0,  f: 100.0},
+    { n: 'Butter',                  cal: 717, p: 0.9,  c: 0.1,  f: 81.0 },
+    { n: 'Banana',                  cal: 89,  p: 1.1,  c: 23.0, f: 0.3  },
+    { n: 'Apple',                   cal: 52,  p: 0.3,  c: 14.0, f: 0.2  },
+    { n: 'Orange',                  cal: 47,  p: 0.9,  c: 12.0, f: 0.1  },
+    { n: 'Blueberries',             cal: 57,  p: 0.7,  c: 14.0, f: 0.3  },
+    { n: 'Strawberries',            cal: 32,  p: 0.7,  c: 8.0,  f: 0.3  },
+    { n: 'Broccoli',                cal: 34,  p: 2.8,  c: 7.0,  f: 0.4  },
+    { n: 'Spinach',                 cal: 23,  p: 2.9,  c: 3.6,  f: 0.4  },
+    { n: 'Quinoa (cooked)',         cal: 120, p: 4.4,  c: 22.0, f: 1.9  },
+    { n: 'Lentils (cooked)',        cal: 116, p: 9.0,  c: 20.0, f: 0.4  },
+    { n: 'Dark chocolate (70%+)',   cal: 598, p: 8.0,  c: 46.0, f: 43.0 },
+    { n: 'Protein bar (avg)',       cal: 200, p: 20.0, c: 20.0, f: 7.0  },
+  ];
+
+  let selectedFood = null;
+  let activeIdx = -1;
+
+  const foodSearchEl  = document.getElementById('foodSearch');
+  const foodDropdownEl = document.getElementById('foodDropdown');
+  const foodGramsEl   = document.getElementById('foodGrams');
+  const dbHintEl      = document.getElementById('dbHint');
+
+  function searchFoods(q) {
+    if (!q || q.length < 1) return [];
+    const lq = q.toLowerCase();
+    return FOODS.filter(f => f.n.toLowerCase().includes(lq)).slice(0, 9);
+  }
+
+  function renderDropdown(results) {
+    foodDropdownEl.innerHTML = '';
+    activeIdx = -1;
+    if (results.length === 0) { foodDropdownEl.classList.remove('open'); return; }
+    results.forEach((food) => {
+      const div = document.createElement('div');
+      div.className = 'food-option';
+      div.innerHTML =
+        '<span class="food-option-name">' + food.n + '</span>' +
+        '<span class="food-option-meta">' + food.cal + ' kcal · ' + food.p + 'p ' + food.c + 'c ' + food.f + 'f</span>';
+      div.addEventListener('mousedown', (e) => { e.preventDefault(); selectFood(food); });
+      foodDropdownEl.appendChild(div);
+    });
+    foodDropdownEl.classList.add('open');
+  }
+
+  function selectFood(food) {
+    selectedFood = food;
+    foodSearchEl.value = food.n;
+    foodDropdownEl.classList.remove('open');
+    document.getElementById('foodName').value = food.n;
+    dbHintEl.textContent = food.n + ' — ' + food.cal + ' kcal / ' + food.p + 'g protein per 100g. Enter grams below.';
+    dbHintEl.className = 'db-hint selected';
+    if (foodGramsEl.value) fillFromGrams();
+    else foodGramsEl.focus();
+  }
+
+  function fillFromGrams() {
+    if (!selectedFood) return;
+    const g = parseFloat(foodGramsEl.value);
+    if (!g || g <= 0) return;
+    const r = g / 100;
+    document.getElementById('foodCal').value     = Math.round(selectedFood.cal * r);
+    document.getElementById('foodProtein').value = +(selectedFood.p * r).toFixed(1);
+    document.getElementById('foodCarbs').value   = +(selectedFood.c * r).toFixed(1);
+    document.getElementById('foodFat').value     = +(selectedFood.f * r).toFixed(1);
+  }
+
+  foodSearchEl.addEventListener('input', () => {
+    selectedFood = null;
+    dbHintEl.textContent = 'Search above to auto-fill macros, or enter manually below.';
+    dbHintEl.className = 'db-hint';
+    document.getElementById('foodName').value = foodSearchEl.value;
+    renderDropdown(searchFoods(foodSearchEl.value));
+  });
+
+  foodSearchEl.addEventListener('keydown', (e) => {
+    const opts = foodDropdownEl.querySelectorAll('.food-option');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIdx = Math.min(activeIdx + 1, opts.length - 1);
+      opts.forEach((o, i) => o.classList.toggle('active', i === activeIdx));
+      if (opts[activeIdx]) opts[activeIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIdx = Math.max(activeIdx - 1, 0);
+      opts.forEach((o, i) => o.classList.toggle('active', i === activeIdx));
+    } else if (e.key === 'Enter') {
+      if (activeIdx >= 0 && opts[activeIdx]) {
+        e.preventDefault();
+        const results = searchFoods(foodSearchEl.value);
+        if (results[activeIdx]) selectFood(results[activeIdx]);
+      }
+    } else if (e.key === 'Escape') {
+      foodDropdownEl.classList.remove('open');
+    }
+  });
+
+  foodSearchEl.addEventListener('blur', () => {
+    setTimeout(() => foodDropdownEl.classList.remove('open'), 160);
+  });
+
+  foodGramsEl.addEventListener('input', fillFromGrams);
+  foodGramsEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('addFoodBtn').click(); }
+  });
+
   // ===== Add food =====
   document.getElementById('addFoodBtn').addEventListener('click', () => {
     const name = document.getElementById('foodName').value.trim();
@@ -669,12 +869,18 @@ body::after {
     d.logs[tk].push({ id: uid(), name: name || 'Food', calories: cal, protein: prot, carbs: carb, fat, time: timeLabel() });
     save(d);
 
+    // clear all fields
+    foodSearchEl.value = '';
+    foodGramsEl.value  = '';
+    selectedFood = null;
+    dbHintEl.textContent = 'Search above to auto-fill macros, or enter manually below.';
+    dbHintEl.className = 'db-hint';
     document.getElementById('foodName').value    = '';
     document.getElementById('foodCal').value     = '';
     document.getElementById('foodProtein').value = '';
     document.getElementById('foodCarbs').value   = '';
     document.getElementById('foodFat').value     = '';
-    document.getElementById('foodName').focus();
+    foodSearchEl.focus();
 
     renderToday();
   });

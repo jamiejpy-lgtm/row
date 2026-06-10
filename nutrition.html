@@ -905,58 +905,58 @@ body::after {
     { n: 'Avocado',                 cal: 160, p: 2.0,  c: 9.0,  f: 15.0 },
     { n: 'Olive oil',               cal: 884, p: 0.0,  c: 0.0,  f: 100.0},
     { n: 'Butter',                  cal: 717, p: 0.9,  c: 0.1,  f: 81.0 },
-    // Fruit
-    { n: 'Apple',                   cal: 52,  p: 0.3,  c: 14.0, f: 0.2  },
-    { n: 'Apricot',                 cal: 48,  p: 1.4,  c: 11.0, f: 0.4  },
-    { n: 'Banana',                  cal: 89,  p: 1.1,  c: 23.0, f: 0.3  },
-    { n: 'Blueberries',             cal: 57,  p: 0.7,  c: 14.0, f: 0.3  },
-    { n: 'Cantaloupe melon',        cal: 34,  p: 0.8,  c: 8.0,  f: 0.2  },
-    { n: 'Cherries',                cal: 63,  p: 1.1,  c: 16.0, f: 0.2  },
-    { n: 'Dates (dried)',           cal: 277, p: 1.8,  c: 75.0, f: 0.2  },
-    { n: 'Grapefruit',              cal: 42,  p: 0.8,  c: 11.0, f: 0.1  },
-    { n: 'Grapes',                  cal: 67,  p: 0.6,  c: 17.0, f: 0.4  },
-    { n: 'Kiwi',                    cal: 61,  p: 1.1,  c: 15.0, f: 0.5  },
-    { n: 'Lemon',                   cal: 29,  p: 1.1,  c: 9.0,  f: 0.3  },
-    { n: 'Lime',                    cal: 30,  p: 0.7,  c: 11.0, f: 0.2  },
-    { n: 'Mango',                   cal: 60,  p: 0.8,  c: 15.0, f: 0.4  },
-    { n: 'Orange',                  cal: 47,  p: 0.9,  c: 12.0, f: 0.1  },
-    { n: 'Peach',                   cal: 39,  p: 0.9,  c: 10.0, f: 0.3  },
-    { n: 'Pear',                    cal: 57,  p: 0.4,  c: 15.0, f: 0.1  },
-    { n: 'Pineapple',               cal: 50,  p: 0.5,  c: 13.0, f: 0.1  },
-    { n: 'Plum',                    cal: 46,  p: 0.7,  c: 11.0, f: 0.3  },
-    { n: 'Pomegranate',             cal: 83,  p: 1.7,  c: 19.0, f: 1.2  },
-    { n: 'Raspberries',             cal: 52,  p: 1.2,  c: 12.0, f: 0.7  },
-    { n: 'Raisins',                 cal: 299, p: 3.1,  c: 79.0, f: 0.5  },
-    { n: 'Strawberries',            cal: 32,  p: 0.7,  c: 8.0,  f: 0.3  },
-    { n: 'Watermelon',              cal: 30,  p: 0.6,  c: 8.0,  f: 0.2  },
+    // Fruit — m values are per 100g (same keys as NUTRIENTS tracker)
+    { n: 'Apple',                   cal: 52,  p: 0.3,  c: 14.0, f: 0.2,  m: { vit_c:4.6,  vit_a:3,   vit_e:0.18, vit_k:2.2,  vit_b6:0.04, folate:3,   potassium:107, calcium:6,  iron:0.12, fiber:2.4, magnesium:5,  phosphorus:11 } },
+    { n: 'Apricot',                 cal: 48,  p: 1.4,  c: 11.0, f: 0.4,  m: { vit_c:10,   vit_a:96,  vit_e:0.89, vit_k:3.3,  vit_b6:0.05, folate:9,   potassium:259, calcium:13, iron:0.39, fiber:2.0, magnesium:10, phosphorus:23 } },
+    { n: 'Banana',                  cal: 89,  p: 1.1,  c: 23.0, f: 0.3,  m: { vit_c:8.7,  vit_b6:0.37, vit_b2:0.07, folate:20, potassium:358, calcium:5, iron:0.26, fiber:2.6, magnesium:27, phosphorus:22 } },
+    { n: 'Blueberries',             cal: 57,  p: 0.7,  c: 14.0, f: 0.3,  m: { vit_c:9.7,  vit_k:19,  vit_e:0.57, folate:6,   potassium:77,  calcium:6,  iron:0.28, fiber:2.4, magnesium:6 } },
+    { n: 'Cantaloupe melon',        cal: 34,  p: 0.8,  c: 8.0,  f: 0.2,  m: { vit_c:36,   vit_a:169, vit_k:2.5,  folate:21,  potassium:267, calcium:9,  iron:0.21, fiber:0.9, magnesium:12 } },
+    { n: 'Cherries',                cal: 63,  p: 1.1,  c: 16.0, f: 0.2,  m: { vit_c:7,    vit_a:3,   vit_k:2.1,  potassium:222, calcium:13, iron:0.36, fiber:2.1, magnesium:11 } },
+    { n: 'Dates (dried)',           cal: 277, p: 1.8,  c: 75.0, f: 0.2,  m: { vit_b6:0.25, potassium:696, calcium:64, iron:1.02, fiber:8.0, magnesium:54, phosphorus:62 } },
+    { n: 'Grapefruit',              cal: 42,  p: 0.8,  c: 11.0, f: 0.1,  m: { vit_c:31.2, vit_a:46,  folate:10,  potassium:135, calcium:12, iron:0.08, fiber:1.6, magnesium:9 } },
+    { n: 'Grapes',                  cal: 67,  p: 0.6,  c: 17.0, f: 0.4,  m: { vit_c:3.2,  vit_k:14.6, vit_b6:0.09, potassium:191, calcium:10, iron:0.36, fiber:0.9, magnesium:7 } },
+    { n: 'Kiwi',                    cal: 61,  p: 1.1,  c: 15.0, f: 0.5,  m: { vit_c:92.7, vit_k:40,  vit_e:1.5,  folate:25,  potassium:312, calcium:34, iron:0.31, fiber:3.0, magnesium:17 } },
+    { n: 'Lemon',                   cal: 29,  p: 1.1,  c: 9.0,  f: 0.3,  m: { vit_c:53,   folate:11,  potassium:138, calcium:26, iron:0.6,  fiber:2.8, magnesium:8 } },
+    { n: 'Lime',                    cal: 30,  p: 0.7,  c: 11.0, f: 0.2,  m: { vit_c:29.1, folate:8,   potassium:102, calcium:33, iron:0.6,  fiber:2.8 } },
+    { n: 'Mango',                   cal: 60,  p: 0.8,  c: 15.0, f: 0.4,  m: { vit_c:36.4, vit_a:54,  vit_b6:0.12, folate:43,  potassium:168, calcium:11, iron:0.16, fiber:1.6, magnesium:10 } },
+    { n: 'Orange',                  cal: 47,  p: 0.9,  c: 12.0, f: 0.1,  m: { vit_c:53.2, vit_b1:0.09, folate:30, potassium:181, calcium:40, iron:0.1,  fiber:2.4, magnesium:10, phosphorus:14 } },
+    { n: 'Peach',                   cal: 39,  p: 0.9,  c: 10.0, f: 0.3,  m: { vit_c:6.6,  vit_a:16,  vit_e:0.73, vit_k:2.6,  potassium:190, calcium:6,  iron:0.25, fiber:1.5, magnesium:9 } },
+    { n: 'Pear',                    cal: 57,  p: 0.4,  c: 15.0, f: 0.1,  m: { vit_c:4.3,  vit_k:4.4,  folate:7,   potassium:116, calcium:9,  iron:0.18, fiber:3.1, magnesium:7 } },
+    { n: 'Pineapple',               cal: 50,  p: 0.5,  c: 13.0, f: 0.1,  m: { vit_c:47.8, vit_b6:0.11, folate:18, potassium:109, calcium:13, iron:0.29, fiber:1.4, magnesium:12 } },
+    { n: 'Plum',                    cal: 46,  p: 0.7,  c: 11.0, f: 0.3,  m: { vit_c:9.5,  vit_a:17,  vit_k:6.4,  potassium:157, calcium:6,  iron:0.17, fiber:1.4, magnesium:7 } },
+    { n: 'Pomegranate',             cal: 83,  p: 1.7,  c: 19.0, f: 1.2,  m: { vit_c:10.2, vit_k:16,  folate:38,  potassium:236, calcium:10, iron:0.3,  fiber:4.0, magnesium:12 } },
+    { n: 'Raspberries',             cal: 52,  p: 1.2,  c: 12.0, f: 0.7,  m: { vit_c:26.2, vit_k:7.8,  vit_e:0.87, folate:21,  potassium:151, calcium:25, iron:0.69, fiber:6.5, magnesium:22 } },
+    { n: 'Raisins',                 cal: 299, p: 3.1,  c: 79.0, f: 0.5,  m: { vit_b6:0.19, potassium:749, calcium:50, iron:1.88, fiber:3.7, magnesium:32, phosphorus:101 } },
+    { n: 'Strawberries',            cal: 32,  p: 0.7,  c: 8.0,  f: 0.3,  m: { vit_c:58.8, vit_k:2.2,  folate:24,  potassium:153, calcium:16, iron:0.41, fiber:2.0, magnesium:13 } },
+    { n: 'Watermelon',              cal: 30,  p: 0.6,  c: 8.0,  f: 0.2,  m: { vit_c:8.1,  vit_a:28,   potassium:112, calcium:7, iron:0.24, fiber:0.4, magnesium:10 } },
     // Vegetables
-    { n: 'Asparagus',               cal: 20,  p: 2.2,  c: 3.9,  f: 0.1  },
-    { n: 'Aubergine / Eggplant',    cal: 25,  p: 1.0,  c: 6.0,  f: 0.2  },
-    { n: 'Beetroot',                cal: 43,  p: 1.6,  c: 10.0, f: 0.2  },
-    { n: 'Bell pepper (green)',     cal: 20,  p: 0.9,  c: 4.6,  f: 0.2  },
-    { n: 'Bell pepper (red)',       cal: 31,  p: 1.0,  c: 6.0,  f: 0.3  },
-    { n: 'Broccoli',                cal: 34,  p: 2.8,  c: 7.0,  f: 0.4  },
-    { n: 'Brussels sprouts',        cal: 43,  p: 3.4,  c: 9.0,  f: 0.3  },
-    { n: 'Butternut squash',        cal: 45,  p: 1.0,  c: 12.0, f: 0.1  },
-    { n: 'Cabbage',                 cal: 25,  p: 1.3,  c: 6.0,  f: 0.1  },
-    { n: 'Carrot',                  cal: 41,  p: 0.9,  c: 10.0, f: 0.2  },
-    { n: 'Cauliflower',             cal: 25,  p: 1.9,  c: 5.0,  f: 0.3  },
-    { n: 'Celery',                  cal: 16,  p: 0.7,  c: 3.0,  f: 0.2  },
-    { n: 'Courgette / Zucchini',    cal: 17,  p: 1.2,  c: 3.1,  f: 0.3  },
-    { n: 'Cucumber',                cal: 15,  p: 0.7,  c: 3.6,  f: 0.1  },
-    { n: 'Edamame',                 cal: 121, p: 11.0, c: 8.9,  f: 5.2  },
-    { n: 'Garlic',                  cal: 149, p: 6.4,  c: 33.0, f: 0.5  },
-    { n: 'Green beans',             cal: 31,  p: 1.8,  c: 7.0,  f: 0.1  },
-    { n: 'Kale',                    cal: 49,  p: 4.3,  c: 9.0,  f: 0.9  },
-    { n: 'Lettuce (romaine)',       cal: 17,  p: 1.2,  c: 3.3,  f: 0.3  },
-    { n: 'Mushrooms',               cal: 22,  p: 3.1,  c: 3.3,  f: 0.3  },
-    { n: 'Onion',                   cal: 40,  p: 1.1,  c: 9.0,  f: 0.1  },
-    { n: 'Peas (frozen)',           cal: 81,  p: 5.4,  c: 14.0, f: 0.4  },
-    { n: 'Radish',                  cal: 16,  p: 0.7,  c: 3.4,  f: 0.1  },
-    { n: 'Spinach',                 cal: 23,  p: 2.9,  c: 3.6,  f: 0.4  },
-    { n: 'Spring onion / Scallion', cal: 32,  p: 1.8,  c: 7.0,  f: 0.2  },
-    { n: 'Sweetcorn',               cal: 86,  p: 3.3,  c: 19.0, f: 1.4  },
-    { n: 'Tomato',                  cal: 18,  p: 0.9,  c: 3.9,  f: 0.2  },
+    { n: 'Asparagus',               cal: 20,  p: 2.2,  c: 3.9,  f: 0.1,  m: { vit_c:5.6,  vit_a:38,  vit_k:41.6, vit_e:1.13, folate:52,  vit_b1:0.14, vit_b2:0.13, potassium:202, calcium:24, iron:2.14, fiber:2.1, magnesium:14, phosphorus:52 } },
+    { n: 'Aubergine / Eggplant',    cal: 25,  p: 1.0,  c: 6.0,  f: 0.2,  m: { vit_c:2.2,  vit_k:3.5,  folate:22,  potassium:229, calcium:9,  iron:0.23, fiber:3.0, magnesium:14 } },
+    { n: 'Beetroot',                cal: 43,  p: 1.6,  c: 10.0, f: 0.2,  m: { vit_c:4.9,  folate:109, vit_b6:0.07, potassium:325, calcium:16, iron:0.8,  fiber:2.8, magnesium:23, phosphorus:40 } },
+    { n: 'Bell pepper (green)',     cal: 20,  p: 0.9,  c: 4.6,  f: 0.2,  m: { vit_c:80.4, vit_a:18,  vit_k:7.4,  vit_b6:0.22, folate:10,  potassium:175, calcium:10, iron:0.34, fiber:1.7, magnesium:10 } },
+    { n: 'Bell pepper (red)',       cal: 31,  p: 1.0,  c: 6.0,  f: 0.3,  m: { vit_c:127.7,vit_a:157, vit_k:4.9,  vit_e:1.58, vit_b6:0.29, folate:46,  potassium:211, calcium:7,  iron:0.43, fiber:2.1, magnesium:12 } },
+    { n: 'Broccoli',                cal: 34,  p: 2.8,  c: 7.0,  f: 0.4,  m: { vit_c:89.2, vit_a:31,  vit_k:101.6,vit_e:0.78, folate:63,  vit_b6:0.18, potassium:316, calcium:47, iron:0.73, fiber:2.6, magnesium:21, phosphorus:66 } },
+    { n: 'Brussels sprouts',        cal: 43,  p: 3.4,  c: 9.0,  f: 0.3,  m: { vit_c:85,   vit_a:38,  vit_k:177,  vit_e:0.88, folate:61,  vit_b6:0.22, potassium:389, calcium:42, iron:1.4,  fiber:3.8, magnesium:23, phosphorus:69 } },
+    { n: 'Butternut squash',        cal: 45,  p: 1.0,  c: 12.0, f: 0.1,  m: { vit_c:21,   vit_a:532, vit_e:1.29, vit_b6:0.15, folate:27,  potassium:352, calcium:48, iron:0.7,  fiber:2.0, magnesium:34, phosphorus:33 } },
+    { n: 'Cabbage',                 cal: 25,  p: 1.3,  c: 6.0,  f: 0.1,  m: { vit_c:36.6, vit_k:76,  vit_b6:0.12, folate:43,  potassium:170, calcium:40, iron:0.47, fiber:2.5, magnesium:12 } },
+    { n: 'Carrot',                  cal: 41,  p: 0.9,  c: 10.0, f: 0.2,  m: { vit_c:5.9,  vit_a:835, vit_k:13.2, vit_b6:0.14, folate:19,  potassium:320, calcium:33, iron:0.3,  fiber:2.8, magnesium:12, phosphorus:35 } },
+    { n: 'Cauliflower',             cal: 25,  p: 1.9,  c: 5.0,  f: 0.3,  m: { vit_c:48.2, vit_k:15.5, vit_b6:0.18, folate:57,  potassium:299, calcium:22, iron:0.42, fiber:2.0, magnesium:15, phosphorus:44 } },
+    { n: 'Celery',                  cal: 16,  p: 0.7,  c: 3.0,  f: 0.2,  m: { vit_c:3.1,  vit_k:29.3, vit_a:22,  folate:36,  potassium:260, calcium:40, iron:0.2,  fiber:1.6, magnesium:11 } },
+    { n: 'Courgette / Zucchini',    cal: 17,  p: 1.2,  c: 3.1,  f: 0.3,  m: { vit_c:17.9, vit_a:10,  vit_k:4.3,  folate:24,  potassium:261, calcium:16, iron:0.37, fiber:1.0, magnesium:18 } },
+    { n: 'Cucumber',                cal: 15,  p: 0.7,  c: 3.6,  f: 0.1,  m: { vit_c:2.8,  vit_k:16.4, vit_a:5,   folate:7,   potassium:147, calcium:16, iron:0.28, fiber:0.5, magnesium:13 } },
+    { n: 'Edamame',                 cal: 121, p: 11.0, c: 8.9,  f: 5.2,  m: { vit_c:6.1,  vit_k:26.7, folate:311, vit_b1:0.2, vit_b2:0.16, potassium:436, calcium:63, iron:2.27, fiber:5.2, magnesium:64, phosphorus:169, zinc:1.37 } },
+    { n: 'Garlic',                  cal: 149, p: 6.4,  c: 33.0, f: 0.5,  m: { vit_c:31.2, vit_b6:1.24, vit_b1:0.2, folate:3,  potassium:401, calcium:181, iron:1.7,  fiber:2.1, magnesium:25, phosphorus:153, selenium:14.2 } },
+    { n: 'Green beans',             cal: 31,  p: 1.8,  c: 7.0,  f: 0.1,  m: { vit_c:12.2, vit_k:14.4, vit_a:35,  folate:37,  vit_b6:0.07, potassium:211, calcium:37, iron:1.03, fiber:2.7, magnesium:25 } },
+    { n: 'Kale',                    cal: 49,  p: 4.3,  c: 9.0,  f: 0.9,  m: { vit_c:120,  vit_a:241, vit_k:817,  vit_e:0.66, folate:141, vit_b6:0.27, vit_b1:0.11, potassium:491, calcium:150, iron:1.47, fiber:2.0, magnesium:47, phosphorus:92 } },
+    { n: 'Lettuce (romaine)',       cal: 17,  p: 1.2,  c: 3.3,  f: 0.3,  m: { vit_c:4,    vit_a:436, vit_k:102.5, folate:136, potassium:247, calcium:33, iron:0.97, fiber:2.1, magnesium:14 } },
+    { n: 'Mushrooms',               cal: 22,  p: 3.1,  c: 3.3,  f: 0.3,  m: { vit_b2:0.35, vit_b3:3.6, vit_d:0.2, selenium:9.3, potassium:318, phosphorus:86, calcium:3,  iron:0.5,  fiber:1.0, zinc:0.52 } },
+    { n: 'Onion',                   cal: 40,  p: 1.1,  c: 9.0,  f: 0.1,  m: { vit_c:7.4,  vit_b6:0.12, folate:19, potassium:146, calcium:23, iron:0.21, fiber:1.7, magnesium:10 } },
+    { n: 'Peas (frozen)',           cal: 81,  p: 5.4,  c: 14.0, f: 0.4,  m: { vit_c:14.2, vit_k:24.8, vit_a:38,  folate:47,  vit_b1:0.27, vit_b6:0.16, potassium:271, calcium:27, iron:1.47, fiber:5.1, magnesium:39, phosphorus:117, zinc:1.19 } },
+    { n: 'Radish',                  cal: 16,  p: 0.7,  c: 3.4,  f: 0.1,  m: { vit_c:14.8, vit_k:1.3,  folate:25,  potassium:233, calcium:25, iron:0.34, fiber:1.6, magnesium:10 } },
+    { n: 'Spinach',                 cal: 23,  p: 2.9,  c: 3.6,  f: 0.4,  m: { vit_c:28.1, vit_a:469, vit_k:482.9,vit_e:2.03, folate:194, vit_b2:0.19, vit_b6:0.20, potassium:558, calcium:99, iron:2.71, fiber:2.2, magnesium:79, phosphorus:49 } },
+    { n: 'Spring onion / Scallion', cal: 32,  p: 1.8,  c: 7.0,  f: 0.2,  m: { vit_c:18.8, vit_k:207,  vit_a:50,  folate:64,  potassium:276, calcium:72, iron:1.48, fiber:2.6, magnesium:20 } },
+    { n: 'Sweetcorn',               cal: 86,  p: 3.3,  c: 19.0, f: 1.4,  m: { vit_c:6.8,  vit_b1:0.2, vit_b3:1.77, vit_b6:0.06, folate:42, potassium:270, calcium:2,  iron:0.52, fiber:2.0, magnesium:37, phosphorus:89, zinc:0.45, selenium:0.6 } },
+    { n: 'Tomato',                  cal: 18,  p: 0.9,  c: 3.9,  f: 0.2,  m: { vit_c:13.7, vit_a:42,  vit_k:7.9,  vit_e:0.54, vit_b6:0.08, folate:15,  potassium:237, calcium:10, iron:0.27, fiber:1.2, magnesium:11 } },
     // Other
     { n: 'Quinoa (cooked)',         cal: 120, p: 4.4,  c: 22.0, f: 1.9  },
     { n: 'Lentils (cooked)',        cal: 116, p: 9.0,  c: 20.0, f: 0.4  },
@@ -1068,7 +1068,17 @@ body::after {
     if (!d.logs) d.logs = {};
     const tk = todayKey();
     if (!Array.isArray(d.logs[tk])) d.logs[tk] = [];
-    d.logs[tk].push({ id: uid(), name: name || 'Food', calories: cal, protein: prot, carbs: carb, fat, time: timeLabel() });
+    const entry = { id: uid(), name: name || 'Food', calories: cal, protein: prot, carbs: carb, fat, time: timeLabel() };
+    if (selectedFood && selectedFood.m) {
+      const g = parseFloat(foodGramsEl.value);
+      if (g > 0) {
+        const r = g / 100;
+        const em = {};
+        Object.keys(selectedFood.m).forEach(k => { em[k] = +(selectedFood.m[k] * r).toFixed(3); });
+        entry.micros = em;
+      }
+    }
+    d.logs[tk].push(entry);
     save(d);
 
     // clear all fields
@@ -1085,6 +1095,7 @@ body::after {
     foodSearchEl.focus();
 
     renderToday();
+    renderMicros();
   });
 
   // Enter key on any form field
@@ -1155,15 +1166,18 @@ body::after {
     return Array.isArray(m[todayKey()]) ? m[todayKey()] : [];
   }
 
-  function microTotals(entries) {
+  function microTotals(manualEntries, foodEntries) {
     const t = {};
-    entries.forEach(e => { t[e.nutrient] = (t[e.nutrient] || 0) + (e.amount || 0); });
+    (manualEntries || []).forEach(e => { t[e.nutrient] = (t[e.nutrient] || 0) + (e.amount || 0); });
+    (foodEntries   || []).forEach(e => {
+      if (e.micros) Object.keys(e.micros).forEach(k => { t[k] = (t[k] || 0) + e.micros[k]; });
+    });
     return t;
   }
 
   function renderMicros() {
     const data = load();
-    const totals = microTotals(getTodayMicros(data));
+    const totals = microTotals(getTodayMicros(data), getTodayEntries(data));
 
     const groups = {};
     NUTRIENTS.forEach(n => { if (!groups[n.group]) groups[n.group] = []; groups[n.group].push(n); });

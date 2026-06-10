@@ -473,6 +473,59 @@ body::after {
 .micro-log-item:hover .micro-log-del { opacity: 1; }
 .micro-log-del:hover { color: var(--danger); }
 
+/* ===== Recommendations ===== */
+.reco-list { display: flex; flex-direction: column; gap: 10px; }
+.reco-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 13px 15px;
+}
+.reco-header {
+  display: flex; align-items: baseline; gap: 10px;
+  flex-wrap: wrap; margin-bottom: 6px;
+}
+.reco-nut-name { font-size: 13px; font-weight: 600; color: var(--text-primary); flex: 1; }
+.reco-progress {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.reco-pct { font-weight: 700; color: #FF6B6B; }
+.reco-pct.warn { color: #FBBF24; }
+.reco-mini-bar {
+  height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,0.06); overflow: hidden; margin-bottom: 10px;
+}
+.reco-mini-bar-fill {
+  height: 100%; border-radius: 2px; background: #FBBF24;
+  transition: width 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.reco-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-bottom: 8px;
+}
+.reco-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.reco-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  font-size: 12px; color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  user-select: none;
+}
+.reco-chip:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); color: var(--text-primary); }
+.reco-chip-val {
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary);
+}
+.reco-all-good {
+  text-align: center; font-size: 12px; color: var(--success);
+  padding: 12px 0; font-weight: 600;
+}
+
 @media (max-width: 540px) {
   body { padding: 14px 14px 50px; }
   .cal-num { font-size: 40px; }
@@ -625,6 +678,10 @@ body::after {
   <div class="card" id="microCard">
     <div class="empty-state">Loading…</div>
   </div>
+
+  <!-- Recommendations -->
+  <div class="section-title">What to Eat Next</div>
+  <div class="card" id="recoCard"><div class="empty-state">Loading…</div></div>
 
   <!-- Log micronutrient -->
   <div class="section-title">Log Nutrient</div>
@@ -1242,6 +1299,91 @@ body::after {
     });
 
     renderMicroLog(getTodayMicros(data));
+    renderRecommendations(totals);
+  }
+
+  function renderRecommendations(totals) {
+    const card = document.getElementById('recoCard');
+    if (!card) return;
+
+    // Rank non-limit nutrients by % of RDA ascending, cap at top 4 most deficient
+    const deficient = NUTRIENTS
+      .filter(n => !n.limit && n.rda > 0)
+      .map(n => ({ ...n, amount: totals[n.id] || 0, pct: (totals[n.id] || 0) / n.rda }))
+      .filter(n => n.pct < 0.85)
+      .sort((a, b) => a.pct - b.pct)
+      .slice(0, 4);
+
+    card.innerHTML = '';
+
+    if (deficient.length === 0) {
+      card.innerHTML = '<div class="reco-all-good">You\'re on track with all tracked nutrients today.</div>';
+      return;
+    }
+
+    const list = document.createElement('div');
+    list.className = 'reco-list';
+
+    deficient.forEach(nut => {
+      // Top 5 foods highest in this nutrient
+      const topFoods = FOODS
+        .filter(f => f.m && f.m[nut.id] > 0)
+        .sort((a, b) => b.m[nut.id] - a.m[nut.id])
+        .slice(0, 5);
+      if (topFoods.length === 0) return;
+
+      const pctInt   = Math.round(nut.pct * 100);
+      const amtDisp  = nut.amount < 10 ? +(nut.amount.toFixed(1)) : Math.round(nut.amount);
+      const rdaDisp  = nut.rda  < 10 ? nut.rda  : Math.round(nut.rda);
+      const isWarn   = pctInt >= 40;
+
+      const item = document.createElement('div');
+      item.className = 'reco-item';
+
+      const hdr = document.createElement('div');
+      hdr.className = 'reco-header';
+      hdr.innerHTML =
+        '<span class="reco-nut-name">' + nut.name + '</span>' +
+        '<span class="reco-progress">' +
+          '<span class="reco-pct' + (isWarn ? ' warn' : '') + '">' + pctInt + '%</span>' +
+          ' of RDA &nbsp;' + amtDisp + '/' + rdaDisp + nut.unit +
+        '</span>';
+      item.appendChild(hdr);
+
+      const bar = document.createElement('div');
+      bar.className = 'reco-mini-bar';
+      const fill = document.createElement('div');
+      fill.className = 'reco-mini-bar-fill';
+      fill.style.width = Math.min(100, pctInt) + '%';
+      bar.appendChild(fill); item.appendChild(bar);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'reco-label';
+      lbl.textContent = 'Good sources';
+      item.appendChild(lbl);
+
+      const chips = document.createElement('div');
+      chips.className = 'reco-chips';
+      topFoods.forEach(food => {
+        const val    = food.m[nut.id];
+        const valStr = val < 10 ? +(val.toFixed(1)) : Math.round(val);
+        const chip   = document.createElement('div');
+        chip.className = 'reco-chip';
+        chip.innerHTML = food.n + ' <span class="reco-chip-val">' + valStr + nut.unit + '</span>';
+        chip.addEventListener('click', () => {
+          const el = document.getElementById('foodSearch');
+          el.value = food.n;
+          el.dispatchEvent(new Event('input'));
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.focus();
+        });
+        chips.appendChild(chip);
+      });
+      item.appendChild(chips);
+      list.appendChild(item);
+    });
+
+    card.appendChild(list);
   }
 
   function renderMicroLog(entries) {

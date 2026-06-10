@@ -1027,6 +1027,8 @@ body::after {
     { n: 'Lentils (cooked)',        cal: 116, p: 9.0,  c: 20.0, f: 0.4,  m: { vit_b1:0.17, vit_b3:1.06, vit_b6:0.18, folate:181, potassium:369, phosphorus:180, magnesium:36, iron:3.33, zinc:1.27, selenium:2.8,  calcium:19,  fiber:7.9 } },
     { n: 'Dark chocolate (70%+)',   cal: 598, p: 8.0,  c: 46.0, f: 43.0, m: { vit_k:7.3,  vit_e:0.59,  potassium:559, phosphorus:206, magnesium:176, iron:11.9, zinc:3.31, selenium:6.8,  calcium:56,  fiber:10.9 } },
     { n: 'Protein bar (avg)',       cal: 200, p: 20.0, c: 20.0, f: 7.0,  m: { vit_b2:0.2,  vit_b12:0.5, selenium:10,   potassium:400, phosphorus:250, magnesium:50, zinc:2.0,  iron:3.0,  calcium:200, fiber:5.0 } },
+    // Supplements — serving: 1 means enter "1" for one sachet/tablet
+    { n: 'Electrolytes (sachet)',   cal: 0,   p: 0,    c: 0,    f: 0,    serving: 1, m: { potassium:150, magnesium:35, sodium:300, vit_b6:0.7, vit_b12:1.25 } },
   ];
 
   let selectedFood = null;
@@ -1050,9 +1052,10 @@ body::after {
     results.forEach((food) => {
       const div = document.createElement('div');
       div.className = 'food-option';
+      const perLabel = food.serving ? 'per serving' : 'per 100g';
       div.innerHTML =
         '<span class="food-option-name">' + food.n + '</span>' +
-        '<span class="food-option-meta">' + food.cal + ' kcal · ' + food.p + 'p ' + food.c + 'c ' + food.f + 'f</span>';
+        '<span class="food-option-meta">' + (food.cal || 0) + ' kcal · ' + food.p + 'p ' + food.c + 'c ' + food.f + 'f · ' + perLabel + '</span>';
       div.addEventListener('mousedown', (e) => { e.preventDefault(); selectFood(food); });
       foodDropdownEl.appendChild(div);
     });
@@ -1064,7 +1067,16 @@ body::after {
     foodSearchEl.value = food.n;
     foodDropdownEl.classList.remove('open');
     document.getElementById('foodName').value = food.n;
-    dbHintEl.textContent = food.n + ' — ' + food.cal + ' kcal / ' + food.p + 'g protein per 100g. Enter grams below.';
+    const gramsLabel = document.querySelector('label[for="foodGrams"]');
+    if (food.serving) {
+      dbHintEl.textContent = food.n + ' — enter number of sachets / servings below.';
+      foodGramsEl.placeholder = '1';
+      if (gramsLabel) gramsLabel.textContent = 'Servings';
+    } else {
+      dbHintEl.textContent = food.n + ' — ' + food.cal + ' kcal / ' + food.p + 'g protein per 100g. Enter grams below.';
+      foodGramsEl.placeholder = '100';
+      if (gramsLabel) gramsLabel.textContent = 'Grams';
+    }
     dbHintEl.className = 'db-hint selected';
     if (foodGramsEl.value) fillFromGrams();
     else foodGramsEl.focus();
@@ -1074,7 +1086,8 @@ body::after {
     if (!selectedFood) return;
     const g = parseFloat(foodGramsEl.value);
     if (!g || g <= 0) return;
-    const r = g / 100;
+    const divisor = selectedFood.serving || 100;
+    const r = g / divisor;
     document.getElementById('foodCal').value     = Math.round(selectedFood.cal * r);
     document.getElementById('foodProtein').value = +(selectedFood.p * r).toFixed(1);
     document.getElementById('foodCarbs').value   = +(selectedFood.c * r).toFixed(1);
@@ -1086,6 +1099,9 @@ body::after {
     dbHintEl.textContent = 'Search above to auto-fill macros, or enter manually below.';
     dbHintEl.className = 'db-hint';
     document.getElementById('foodName').value = foodSearchEl.value;
+    foodGramsEl.placeholder = '100';
+    const gramsLabel = document.querySelector('label[for="foodGrams"]');
+    if (gramsLabel) gramsLabel.textContent = 'Grams';
     renderDropdown(searchFoods(foodSearchEl.value));
   });
 
@@ -1137,7 +1153,7 @@ body::after {
     if (selectedFood && selectedFood.m) {
       const g = parseFloat(foodGramsEl.value);
       if (g > 0) {
-        const r = g / 100;
+        const r = g / (selectedFood.serving || 100);
         const em = {};
         Object.keys(selectedFood.m).forEach(k => { em[k] = +(selectedFood.m[k] * r).toFixed(3); });
         entry.micros = em;

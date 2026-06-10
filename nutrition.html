@@ -353,6 +353,126 @@ body::after {
   margin: 12px 0;
 }
 
+/* ===== Micronutrients ===== */
+.micro-group { margin-bottom: 16px; }
+.micro-group:last-child { margin-bottom: 0; }
+.micro-group-label {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+.micro-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+.micro-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 9px 10px;
+  transition: border-color 0.3s, background 0.3s;
+}
+.micro-card.good      { border-color: rgba(107,227,164,0.22); background: rgba(107,227,164,0.04); }
+.micro-card.limit-ok  { border-color: rgba(96,165,250,0.22); background: rgba(96,165,250,0.03); }
+.micro-card.limit-over{ border-color: rgba(255,107,107,0.28); background: rgba(255,107,107,0.05); }
+.micro-name {
+  font-size: 10px; font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.micro-val {
+  font-family: var(--font-mono);
+  font-size: 13px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.micro-rda {
+  font-family: var(--font-mono);
+  font-size: 9px; color: var(--text-tertiary);
+  margin-top: 1px;
+}
+.micro-bar-track {
+  height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden; margin-top: 5px;
+}
+.micro-bar-fill {
+  height: 100%; border-radius: 2px;
+  background: rgba(255,255,255,0.15);
+  transition: width 0.45s cubic-bezier(0.22,1,0.36,1);
+}
+.micro-bar-fill.good       { background: #6BE3A4; }
+.micro-bar-fill.warn       { background: #FBBF24; }
+.micro-bar-fill.low        { background: rgba(255,107,107,0.6); }
+.micro-bar-fill.limit-ok   { background: #60A5FA; }
+.micro-bar-fill.limit-over { background: #FF6B6B; }
+
+.form-select {
+  width: 100%;
+  padding: 10px 32px 10px 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.28);
+  color: var(--text-primary);
+  font-family: inherit; font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2376746E' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color 0.2s;
+}
+.form-select:focus { border-color: rgba(255,255,255,0.28); }
+.form-select option, .form-select optgroup { background: #141416; color: #FAFAFA; }
+
+.micro-form-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+}
+.micro-unit-hint {
+  font-size: 10.5px; color: var(--text-tertiary);
+  margin-top: 7px; padding-left: 2px;
+}
+
+.micro-log-list { list-style: none; margin: 0; padding: 0; }
+.micro-log-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; margin-bottom: 5px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+}
+.micro-log-name {
+  flex: 1; font-size: 13px; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.micro-log-amount {
+  font-family: var(--font-mono);
+  font-size: 12px; font-weight: 700;
+  color: var(--text-primary); font-variant-numeric: tabular-nums;
+  background: rgba(255,255,255,0.05);
+  padding: 2px 7px; border-radius: 6px; flex-shrink: 0;
+}
+.micro-log-time {
+  font-family: var(--font-mono);
+  font-size: 10px; color: var(--text-tertiary); flex-shrink: 0;
+}
+.micro-log-del {
+  border: 0; background: transparent;
+  color: var(--text-tertiary); font-size: 16px;
+  cursor: pointer; padding: 0 4px; opacity: 0.4; flex-shrink: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+.micro-log-item:hover .micro-log-del { opacity: 1; }
+.micro-log-del:hover { color: var(--danger); }
+
 @media (max-width: 540px) {
   body { padding: 14px 14px 50px; }
   .cal-num { font-size: 40px; }
@@ -360,6 +480,9 @@ body::after {
   .goal-row { grid-template-columns: 1fr 1fr; }
   .macro-grid { gap: 6px; }
   .macro-val { font-size: 18px; }
+  .micro-grid { grid-template-columns: repeat(2, 1fr); }
+  .micro-form-row { grid-template-columns: 1fr 1fr; }
+  .micro-form-row .btn-micro-add { grid-column: 1 / -1; }
 }
 @media (max-width: 360px) {
   .log-macro-tag { display: none; }
@@ -495,6 +618,39 @@ body::after {
       </div>
     </div>
     <button class="btn-save" id="saveGoalsBtn" type="button">Save goals</button>
+  </div>
+
+  <!-- Micronutrients overview -->
+  <div class="section-title">Vitamins &amp; Minerals</div>
+  <div class="card" id="microCard">
+    <div class="empty-state">Loading…</div>
+  </div>
+
+  <!-- Log micronutrient -->
+  <div class="section-title">Log Nutrient</div>
+  <div class="card">
+    <div class="micro-form-row">
+      <div class="form-field">
+        <label class="form-label" for="microSelect">Nutrient</label>
+        <select class="form-select" id="microSelect"></select>
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="microAmount">Amount</label>
+        <input class="form-input" id="microAmount" type="number" min="0" step="any" placeholder="0">
+      </div>
+      <div class="form-field" style="justify-content:flex-end;">
+        <label class="form-label">&nbsp;</label>
+        <button class="btn-add btn-micro-add" id="addMicroBtn" type="button">+ Log</button>
+      </div>
+    </div>
+    <div class="micro-unit-hint" id="microUnitHint"></div>
+  </div>
+
+  <!-- Today's micronutrient log -->
+  <div class="section-title">Today's Nutrient Log</div>
+  <div class="card" style="padding:14px;">
+    <ul class="micro-log-list" id="microLog"></ul>
+    <div class="empty-state" id="microEmpty">No nutrients logged today.</div>
   </div>
 </div>
 
@@ -917,12 +1073,188 @@ body::after {
     setTimeout(() => { btn.textContent = 'Save goals'; }, 1500);
   });
 
+  // ===== Micronutrients =====
+  const NUTRIENTS = [
+    // Vitamins
+    { id: 'vit_a',   name: 'Vitamin A',     unit: 'µg', rda: 900,   group: 'Vitamins' },
+    { id: 'vit_c',   name: 'Vitamin C',     unit: 'mg', rda: 90,    group: 'Vitamins' },
+    { id: 'vit_d',   name: 'Vitamin D',     unit: 'µg', rda: 15,    group: 'Vitamins' },
+    { id: 'vit_e',   name: 'Vitamin E',     unit: 'mg', rda: 15,    group: 'Vitamins' },
+    { id: 'vit_k',   name: 'Vitamin K',     unit: 'µg', rda: 120,   group: 'Vitamins' },
+    { id: 'vit_b1',  name: 'B1 Thiamine',   unit: 'mg', rda: 1.2,   group: 'Vitamins' },
+    { id: 'vit_b2',  name: 'B2 Riboflavin', unit: 'mg', rda: 1.3,   group: 'Vitamins' },
+    { id: 'vit_b3',  name: 'B3 Niacin',     unit: 'mg', rda: 16,    group: 'Vitamins' },
+    { id: 'vit_b6',  name: 'B6',            unit: 'mg', rda: 1.7,   group: 'Vitamins' },
+    { id: 'vit_b12', name: 'B12',           unit: 'µg', rda: 2.4,   group: 'Vitamins' },
+    { id: 'folate',  name: 'Folate (B9)',   unit: 'µg', rda: 400,   group: 'Vitamins' },
+    // Minerals
+    { id: 'calcium',   name: 'Calcium',    unit: 'mg', rda: 1000,  group: 'Minerals' },
+    { id: 'iron',      name: 'Iron',       unit: 'mg', rda: 8,     group: 'Minerals' },
+    { id: 'magnesium', name: 'Magnesium',  unit: 'mg', rda: 420,   group: 'Minerals' },
+    { id: 'phosphorus',name: 'Phosphorus', unit: 'mg', rda: 700,   group: 'Minerals' },
+    { id: 'potassium', name: 'Potassium',  unit: 'mg', rda: 4700,  group: 'Minerals' },
+    { id: 'zinc',      name: 'Zinc',       unit: 'mg', rda: 11,    group: 'Minerals' },
+    { id: 'selenium',  name: 'Selenium',   unit: 'µg', rda: 55,    group: 'Minerals' },
+    { id: 'sodium',    name: 'Sodium',     unit: 'mg', rda: 2300,  group: 'Minerals', limit: true },
+    // Other
+    { id: 'omega3', name: 'Omega-3', unit: 'g',  rda: 1.6, group: 'Other' },
+    { id: 'fiber',  name: 'Fibre',   unit: 'g',  rda: 30,  group: 'Other' },
+  ];
+
+  const NUT_BY_ID = {};
+  NUTRIENTS.forEach(n => { NUT_BY_ID[n.id] = n; });
+
+  function getTodayMicros(data) {
+    const m = data.micros || {};
+    return Array.isArray(m[todayKey()]) ? m[todayKey()] : [];
+  }
+
+  function microTotals(entries) {
+    const t = {};
+    entries.forEach(e => { t[e.nutrient] = (t[e.nutrient] || 0) + (e.amount || 0); });
+    return t;
+  }
+
+  function renderMicros() {
+    const data = load();
+    const totals = microTotals(getTodayMicros(data));
+
+    const groups = {};
+    NUTRIENTS.forEach(n => { if (!groups[n.group]) groups[n.group] = []; groups[n.group].push(n); });
+
+    const card = document.getElementById('microCard');
+    card.innerHTML = '';
+
+    Object.keys(groups).forEach(gName => {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'micro-group';
+
+      const lbl = document.createElement('div');
+      lbl.className = 'micro-group-label';
+      lbl.textContent = gName;
+      groupEl.appendChild(lbl);
+
+      const grid = document.createElement('div');
+      grid.className = 'micro-grid';
+
+      groups[gName].forEach(nut => {
+        const amount = totals[nut.id] || 0;
+        const pct = nut.rda > 0 ? Math.min(1, amount / nut.rda) : 0;
+        const isLimit = !!nut.limit;
+        const isOver  = amount > nut.rda;
+        const isGood  = !isLimit ? pct >= 1 : !isOver;
+        const isWarn  = !isLimit && pct >= 0.5 && pct < 1;
+
+        let cardCls = 'micro-card';
+        let barCls  = 'micro-bar-fill';
+        if (isLimit) {
+          cardCls += isOver ? ' limit-over' : (amount > 0 ? ' limit-ok' : '');
+          barCls  += isOver ? ' limit-over' : ' limit-ok';
+        } else {
+          if (isGood)      { cardCls += ' good'; barCls += ' good'; }
+          else if (isWarn) { barCls += ' warn'; }
+          else if (amount > 0) { barCls += ' low'; }
+        }
+
+        const amtStr = amount === 0 ? '0' : (amount < 10 ? +(amount.toFixed(1)) : Math.round(amount));
+        const rdaStr = nut.rda < 10 ? nut.rda : Math.round(nut.rda);
+
+        const mc = document.createElement('div');
+        mc.className = cardCls;
+        mc.innerHTML =
+          '<div class="micro-name" title="' + nut.name + '">' + nut.name + '</div>' +
+          '<div class="micro-val">' + amtStr + '<span style="font-size:10px;color:var(--text-tertiary)">' + nut.unit + '</span></div>' +
+          '<div class="micro-rda">' + (isLimit ? 'limit' : 'RDA') + ' ' + rdaStr + nut.unit + '</div>' +
+          '<div class="micro-bar-track"><div class="' + barCls + '" style="width:' + Math.round(pct * 100) + '%"></div></div>';
+        grid.appendChild(mc);
+      });
+
+      groupEl.appendChild(grid);
+      card.appendChild(groupEl);
+    });
+
+    renderMicroLog(getTodayMicros(data));
+  }
+
+  function renderMicroLog(entries) {
+    const ul    = document.getElementById('microLog');
+    const empty = document.getElementById('microEmpty');
+    ul.innerHTML = '';
+    if (entries.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    [...entries].reverse().forEach((e, ri) => {
+      const idx = entries.length - 1 - ri;
+      const nut = NUT_BY_ID[e.nutrient] || { name: e.nutrient, unit: '' };
+      const amtStr = (e.amount || 0) < 10 ? +((e.amount || 0).toFixed(1)) : Math.round(e.amount || 0);
+      const li = document.createElement('li');
+      li.className = 'micro-log-item';
+      li.innerHTML =
+        '<span class="micro-log-name">' + nut.name + '</span>' +
+        '<span class="micro-log-amount">' + amtStr + nut.unit + '</span>' +
+        '<span class="micro-log-time">' + (e.time || '') + '</span>' +
+        '<button class="micro-log-del" type="button" aria-label="Delete">\xd7</button>';
+      li.querySelector('.micro-log-del').addEventListener('click', () => {
+        const d = load();
+        if (!d.micros) d.micros = {};
+        const tk = todayKey();
+        if (!Array.isArray(d.micros[tk])) d.micros[tk] = [];
+        d.micros[tk].splice(idx, 1);
+        save(d); renderMicros();
+      });
+      ul.appendChild(li);
+    });
+  }
+
+  // Populate <select>
+  const microSelEl = document.getElementById('microSelect');
+  (function () {
+    const grps = {};
+    NUTRIENTS.forEach(n => { if (!grps[n.group]) grps[n.group] = []; grps[n.group].push(n); });
+    Object.keys(grps).forEach(g => {
+      const og = document.createElement('optgroup');
+      og.label = g;
+      grps[g].forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n.id;
+        opt.textContent = n.name + ' (' + n.unit + ')';
+        og.appendChild(opt);
+      });
+      microSelEl.appendChild(og);
+    });
+  })();
+
+  function updateMicroHint() {
+    const nut = NUT_BY_ID[microSelEl.value];
+    const el  = document.getElementById('microUnitHint');
+    if (nut) el.textContent = nut.name + ' — ' + (nut.limit ? 'daily limit: ' : 'RDA: ') + nut.rda + nut.unit;
+  }
+  microSelEl.addEventListener('change', updateMicroHint);
+  updateMicroHint();
+
+  document.getElementById('addMicroBtn').addEventListener('click', () => {
+    const nutId  = microSelEl.value;
+    const amount = parseFloat(document.getElementById('microAmount').value);
+    if (!nutId || !amount || amount <= 0) return;
+    const d = load();
+    if (!d.micros) d.micros = {};
+    const tk = todayKey();
+    if (!Array.isArray(d.micros[tk])) d.micros[tk] = [];
+    d.micros[tk].push({ id: uid(), nutrient: nutId, amount, time: timeLabel() });
+    save(d);
+    document.getElementById('microAmount').value = '';
+    renderMicros();
+  });
+  document.getElementById('microAmount').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('addMicroBtn').click(); }
+  });
+
   // ===== Boot =====
   loadGoalInputs();
   renderToday();
+  renderMicros();
 
   window.addEventListener('storage', e => {
-    if (e.key === STORE_KEY) { loadGoalInputs(); renderToday(); }
+    if (e.key === STORE_KEY) { loadGoalInputs(); renderToday(); renderMicros(); }
   });
 })();
 </script>

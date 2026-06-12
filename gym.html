@@ -868,85 +868,85 @@ img, video, canvas, svg { max-width: 100%; }
    ============================================================ */
 .fk-card {
   background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 14px; padding: 18px 18px 14px; margin-top: 6px;
+  border-radius: 16px; padding: 26px 26px 20px; margin-top: 6px;
 }
-.fk-hero { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.fk-hero { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
 .fk-time-num {
-  font-size: 48px; font-weight: 800; line-height: 1;
-  letter-spacing: -2px; color: var(--text-1);
+  font-size: 64px; font-weight: 800; line-height: 1;
+  letter-spacing: -3px; color: var(--text-1);
   font-variant-numeric: tabular-nums;
 }
-.fk-time-unit { font-size: 16px; color: var(--text-3); }
+.fk-time-unit { font-size: 18px; color: var(--text-3); }
 .fk-pb-row {
-  display: flex; gap: 16px; margin: 6px 0 16px;
-  font-size: 12px; color: var(--text-3);
+  display: flex; gap: 20px; margin: 10px 0 22px;
+  font-size: 13px; color: var(--text-3);
 }
 .fk-pb-val { color: var(--good); font-weight: 700; }
 .fk-streak { color: var(--warn); font-weight: 700; }
-.fk-log-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
-.fk-time-inputs { display: flex; align-items: center; gap: 4px; flex: 1; }
+.fk-log-row { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; }
+.fk-time-inputs { display: flex; align-items: center; gap: 6px; flex: 1; }
 .fk-input {
   background: rgba(0,0,0,0.25); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--text-1);
-  font-family: var(--font-mono); font-size: 18px; font-weight: 700;
-  text-align: center; outline: none; padding: 8px 4px;
+  border-radius: 10px; color: var(--text-1);
+  font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+  text-align: center; outline: none; padding: 12px 6px;
   -moz-appearance: textfield; transition: border-color 0.15s;
 }
 .fk-input::-webkit-inner-spin-button,
 .fk-input::-webkit-outer-spin-button { -webkit-appearance: none; }
 .fk-input:focus { border-color: rgba(110,231,183,0.4); }
-.fk-input-mm { width: 52px; }
-.fk-input-ss { width: 52px; }
-.fk-sep { font-size: 20px; font-weight: 700; color: var(--text-3); }
+.fk-input-mm { width: 68px; }
+.fk-input-ss { width: 68px; }
+.fk-sep { font-size: 26px; font-weight: 700; color: var(--text-3); }
 .fk-log-btn {
-  background: var(--good); border: none; border-radius: 9px;
-  color: #000; font-family: var(--font); font-size: 13px; font-weight: 700;
-  padding: 10px 16px; cursor: pointer; white-space: nowrap;
+  background: var(--good); border: none; border-radius: 10px;
+  color: #000; font-family: var(--font); font-size: 14px; font-weight: 700;
+  padding: 14px 22px; cursor: pointer; white-space: nowrap;
   transition: opacity 0.15s, transform 0.1s;
 }
 .fk-log-btn:hover { opacity: 0.88; }
 .fk-log-btn:active { transform: scale(0.97); }
 /* Chart */
-.fk-chart-wrap { position: relative; height: 80px; margin: 0 0 8px; }
+.fk-chart-wrap { position: relative; height: 180px; margin: 0 0 10px; }
 .fk-chart { width: 100%; height: 100%; overflow: visible; }
 .fk-grid-line { stroke: rgba(255,255,255,0.05); stroke-width: 1; }
 .fk-area { fill: url(#fkFill); }
-.fk-line { fill: none; stroke: var(--good); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.fk-dot { fill: var(--good); stroke: var(--bg-card); stroke-width: 1.5; }
-.fk-dot-today { fill: #fff; stroke: var(--good); stroke-width: 2; }
+.fk-line { fill: none; stroke: var(--good); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.fk-dot { fill: var(--good); stroke: var(--bg-card); stroke-width: 2; }
+.fk-dot-today { fill: #fff; stroke: var(--good); stroke-width: 2.5; }
 .fk-yaxis {
   display: flex; flex-direction: column; justify-content: space-between;
-  position: absolute; top: 0; left: 0; bottom: 16px;
-  font-size: 9px; font-family: var(--font-mono); color: var(--text-4);
+  position: absolute; top: 0; left: 0; bottom: 22px;
+  font-size: 10px; font-family: var(--font-mono); color: var(--text-4);
   pointer-events: none;
 }
 .fk-legend {
-  display: flex; gap: 14px; margin-top: 4px;
-  font-size: 11px; color: var(--text-3);
+  display: flex; gap: 14px; margin-top: 6px;
+  font-size: 12px; color: var(--text-3);
 }
 .fk-legend-dot {
-  display: inline-block; width: 7px; height: 7px;
-  border-radius: 50%; background: var(--good); margin-right: 4px; vertical-align: middle;
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--good); margin-right: 5px; vertical-align: middle;
 }
 /* History */
-.fk-history { display: flex; flex-direction: column; gap: 1px; margin-top: 10px; }
+.fk-history { display: flex; flex-direction: column; gap: 2px; margin-top: 20px; }
 .fk-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 6px; border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .fk-row:last-child { border-bottom: none; }
-.fk-row-date { font-size: 12px; color: var(--text-3); width: 80px; flex-shrink: 0; }
-.fk-row-bar-track { flex: 1; height: 4px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+.fk-row-date { font-size: 13px; color: var(--text-3); width: 90px; flex-shrink: 0; }
+.fk-row-bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
 .fk-row-bar { height: 100%; border-radius: 99px; background: var(--good); transition: width 0.3s; }
-.fk-row-time { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-1); width: 50px; text-align: right; flex-shrink: 0; }
+.fk-row-time { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--text-1); width: 56px; text-align: right; flex-shrink: 0; }
 .fk-row-del {
   background: none; border: none; color: var(--text-4);
-  font-size: 16px; cursor: pointer; padding: 0 2px;
+  font-size: 18px; cursor: pointer; padding: 0 3px;
   opacity: 0; transition: opacity 0.15s;
 }
 .fk-row:hover .fk-row-del { opacity: 1; }
-.fk-row-pb { font-size: 10px; color: var(--good); font-weight: 700; margin-left: 4px; }
-.fk-empty { font-size: 12px; color: var(--text-4); text-align: center; padding: 12px 0; }
+.fk-row-pb { font-size: 11px; color: var(--good); font-weight: 700; margin-left: 4px; }
+.fk-empty { font-size: 13px; color: var(--text-4); text-align: center; padding: 20px 0; }
 
 /* ============================================================
    WEIGHT TRACKER + PROGRESS PHOTOS — scoped under .wt-* so the
@@ -3610,8 +3610,8 @@ img, video, canvas, svg { max-width: 100%; }
       const yMax_secs = 30 * 60; // 30:00 — top of chart (slowest)
       const today = fkTodayKey();
 
-      const W = 400, H = 120;
-      const pad = { l: 38, r: 12, t: 10, b: 24 };
+      const W = 400, H = 220;
+      const pad = { l: 42, r: 12, t: 12, b: 30 };
       const iW = W - pad.l - pad.r;
       const iH = H - pad.t - pad.b;
 
